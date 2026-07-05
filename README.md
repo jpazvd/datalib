@@ -1,9 +1,4 @@
 # DATALIB
-UNICEF Microdata Library
-
-> ⚠️ **Where to contribute:** development happens in **[jpazvd/datalib-dev](https://github.com/jpazvd/datalib-dev)**.
-> The public repo **jpazvd/datalib** is a *generated mirror*, refreshed automatically from
-> datalib-dev on version tags (`v*`) — do not commit or open PRs there; changes will be overwritten.
 
 ## Quick start
 
