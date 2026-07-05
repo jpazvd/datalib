@@ -1,5 +1,29 @@
 # DATALIB
 
+**`datalib` treats survey microdata as a versioned asset** — the operational
+equivalent, for household surveys, of what version control did for code.
+
+Research teams treat code as a versioned asset: committed, reviewed,
+integrity-checked, citable. Data rarely gets the same discipline — microdata
+typically lives on a shared drive, in a folder named by whoever last copied it,
+with a citation buried in an e-mail thread. Yet a nationally representative
+survey costs millions of dollars to field, while a re-analysis costs orders of
+magnitude less: the highest-leverage intervention in empirical research is not
+collecting more surveys but **sustaining more analyses per survey**.
+
+`datalib` makes that possible by encoding the archive discipline as executable
+code rather than undocumented researcher conventions. It organizes microdata in
+the **IHSN / World Bank Microdata Library** folder standard — original **MASTER**
+files (`CCC_YYYY_SSSS_vNN_M`, immutable) kept strictly separate from
+**HARMONIZED** adaptations (`..._vNN_A_CLCT`) — and provides a unified interface
+to deposit, discover, load, and validate survey-versions across countries and
+vintages, with DDI/Dublin Core metadata generated at deposit time. Originally
+developed in the context of the World Bank's microdata workflows and since used
+at UNICEF and other institutions, the design is **institution-agnostic**: it fits
+research labs, statistical agencies, microdata custodians, and multi-investigator
+teams alike — anyone who believes data deserves the same versioned, auditable
+handling that code already gets.
+
 ## Quick start
 
 `datalib` organizes survey microdata in the **IHSN / World Bank Microdata Library**
