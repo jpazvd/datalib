@@ -1,0 +1,8 @@
+v 3
+d UNICEF datalib repository
+d Joao Pedro Azevedo (UNICEF), jpazevedo@unicef.org
+d
+d Install with: net install datalib
+d
+p datalib Access the UNICEF Microdata Library (IHSN-organized survey archive)
+e

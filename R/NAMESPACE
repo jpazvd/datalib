@@ -1,0 +1,11 @@
+# Generated/maintained by hand for the prototype.
+export(dl_get)
+export(dl_put)
+export(dl_check)
+export(dl_root)
+export(dl_survey_id)
+export(dl_version_name)
+export(dl_parse_id)
+export(dl_version_dir)
+export(dl_data_file)
+export(dl_find_latest)

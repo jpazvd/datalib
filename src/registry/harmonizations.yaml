@@ -1,0 +1,231 @@
+# =============================================================================
+# datalib harmonization registry
+# -----------------------------------------------------------------------------
+# Recognized harmonization families. The HHHH suffix in adaptation folder
+# names (CCC_YYYY_SSSS_vNN_M_vNN_A_HHHH) must match a key in this file. Used
+# by `_dtlb_adaptcheck` to validate adaptation folders and by the catalog
+# frame to enrich adaptation rows.
+#
+# The HHHH segment in folder names is conventionally a 4–6 character
+# uppercase alphanumeric tag. Most entries below use 4–5 characters
+# (e.g., GMD, GLAD, IPUMS); longer tags are valid as long as they
+# remain alphanumeric and unique within this file.
+#
+# Schema:
+#   <HHHH>:
+#     name:           full English name
+#     description:    one-line description (or block-scalar for longer)
+#     scope:          global | regional | national
+#     domain:         poverty | education | health | labor | nutrition |
+#                     demography | consumption | other
+#     region:         WB region code (only if scope = regional)
+#     country:        ISO3 code (only if scope = national)
+#     producer:       institution producing the harmonization
+#     url:            reference URL
+#     guidelines_url: optional URL to upstream developer/standards docs
+#     citation:       bibliographic citation key (matches paper/datalib.bib)
+#     license:        public | licensed | restricted
+#                     (default: inherits per-survey datalib.yaml.license)
+#     citation_required:
+#                     optional block-scalar with the upstream's preferred
+#                     citation; surfaced to users via r(citation)
+#     dispatch:       optional block describing how the future dispatcher
+#                     routes ingestion calls to upstream commands. Fields:
+#       backend:        datazoom | ipums_api | local_script
+#       command:        single Stata command (when not year-specific)
+#       command_per_year: map of year -> command (when year-specific)
+#       year_range:     [start, end] for surveys covering a span
+#       valid_years:    [year, year, ...] for discrete-valued surveys
+#       api_endpoint:   HTTPS URL (when backend = ipums_api or similar)
+#       auth:           api_key | none | bearer
+#       auth_env:       env var name holding the API key
+#       collection:     upstream-specific collection identifier
+#       helper:         datalib-side dispatcher ado that wraps the call
+#       options_template: map of upstream-option -> datalib-mapped-value
+#       notes:          free-form block-scalar
+# =============================================================================
+
+# --- Global poverty ----------------------------------------------------------
+GMD:
+  name: Global Monitoring Database
+  description: World Bank harmonization standard for global poverty measurement
+  scope: global
+  domain: poverty
+  producer: World Bank, Development Data Group
+  url: https://www.worldbank.org/en/programs/all-poverty-measurement
+  citation: worldbank2020gmad
+
+GMI:
+  name: Global Microdata Initiative
+  description: Aggregate of country-level microdata curated for cross-country analysis
+  scope: global
+  domain: poverty
+  producer: World Bank
+  url: https://www.worldbank.org/en/data/global-monitoring
+
+IPUMS:
+  name: Integrated Public Use Microdata Series — International
+  description: |
+    Cross-country harmonized census microdata from IPUMS-International,
+    covering 100+ countries and 600+ censuses. Treated as an *adaptation*
+    of the underlying national census master; adaptation tag IPUMS appears
+    in folder names like CCC_YYYY_CENSUS_vNN_M_vNN_A_IPUMS.
+  scope: global
+  domain: demography
+  producer: IPUMS-International, Minnesota Population Center
+  url: https://international.ipums.org/
+  guidelines_url: https://developer.ipums.org/
+  dispatch:
+    backend: ipums_api
+    api_endpoint: https://api.ipums.org/extracts/v1
+    auth: api_key
+    auth_env: IPUMS_API_KEY
+    collection: ipumsi
+    helper: _dtlb_ipums_extract
+    notes: |
+      Extracts are user-scoped on the IPUMS side; the helper caches submitted
+      extract numbers in registry/ipums_extracts/cache/<user>.yaml to avoid
+      duplicate submissions.
+  license: licensed
+  citation_required: |
+    Ruggles, S., et al. Integrated Public Use Microdata Series, International:
+    Version <version>. Minneapolis, MN: IPUMS, <year>.
+    https://doi.org/10.18128/D020.V<version>
+
+# --- Global education --------------------------------------------------------
+GLAD:
+  name: Global Learning Assessment Database
+  description: Harmonized international learning assessment microdata
+  scope: global
+  domain: education
+  producer: World Bank, Education Global Practice
+  url: https://datacatalog.worldbank.org/search/dataset/0038001/Global-Learning-Assessment-Database--GLAD-
+
+# --- Global labor ------------------------------------------------------------
+I2D2:
+  name: International Income Distribution Database
+  description: Harmonized labor market and income microdata across countries
+  scope: global
+  domain: labor
+  producer: World Bank, Poverty Global Practice
+
+# --- Regional: Latin America and Caribbean -----------------------------------
+SEDLAC:
+  name: Socio-Economic Database for Latin America and the Caribbean
+  description: LAC household survey harmonization (CEDLAS / World Bank partnership)
+  scope: regional
+  region: LAC
+  domain: poverty
+  producer: CEDLAS (Universidad Nacional de La Plata) and World Bank
+  url: https://www.cedlas.econo.unlp.edu.ar/wp/en/estadisticas/sedlac/
+
+LABLAC:
+  name: Labor Database for Latin America and the Caribbean
+  description: LAC labor market harmonization
+  scope: regional
+  region: LAC
+  domain: labor
+  producer: CEDLAS and World Bank
+
+# --- Regional: Europe and Central Asia ---------------------------------------
+ECAPOV:
+  name: Europe and Central Asia Poverty harmonization
+  description: ECA regional poverty/inequality harmonization standard
+  scope: regional
+  region: ECA
+  domain: poverty
+  producer: World Bank, ECATSD
+  url: https://spark.worldbank.org/groups/ecatsd/content
+
+ECALAB:
+  name: Europe and Central Asia Labor harmonization
+  description: ECA regional labor market harmonization
+  scope: regional
+  region: ECA
+  domain: labor
+  producer: World Bank, ECATSD
+
+# --- Regional: East Asia and Pacific -----------------------------------------
+EAPPOV:
+  name: East Asia and Pacific Poverty harmonization
+  description: EAP regional poverty/inequality harmonization
+  scope: regional
+  region: EAP
+  domain: poverty
+  producer: World Bank, EAP
+
+# --- Regional: South Asia ----------------------------------------------------
+SARMD:
+  name: South Asia Region Microdata harmonization
+  description: SAR regional microdata harmonization
+  scope: regional
+  region: SAR
+  domain: poverty
+  producer: World Bank, SAR
+
+# --- Regional: Middle East and North Africa ----------------------------------
+MNAPOV:
+  name: Middle East and North Africa Poverty harmonization
+  description: MNA regional poverty harmonization
+  scope: regional
+  region: MNA
+  domain: poverty
+  producer: World Bank, MNA
+
+# --- Regional: Sub-Saharan Africa --------------------------------------------
+SSAPOV:
+  name: Sub-Saharan Africa Poverty harmonization
+  description: SSA regional poverty harmonization
+  scope: regional
+  region: SSA
+  domain: poverty
+  producer: World Bank, SSA
+
+# --- National: Brazil --------------------------------------------------------
+DTZ81:
+  name: Datazoom 1981+ PNAD harmonization
+  description: Brazil-specific harmonization of PNAD covering 1981 to 2015 vintages
+  scope: national
+  country: BRA
+  domain: poverty
+  producer: Datazoom (PUC-Rio)
+  url: https://www.econ.puc-rio.br/datazoom/
+  citation: ibge2016pnad
+
+DTZ92:
+  name: Datazoom 1992+ PNAD harmonization (extended)
+  description: Brazil-specific harmonization with extended variable set, 1992 onwards
+  scope: national
+  country: BRA
+  domain: poverty
+  producer: Datazoom (PUC-Rio)
+  url: https://www.econ.puc-rio.br/datazoom/
+  citation: ibge2016pnad
+
+PANEL:
+  name: PNADC rotational panel construction
+  description: Brazilian PNADC quarterly panel identifiers (idbas/idrs) for longitudinal analysis
+  scope: national
+  country: BRA
+  domain: labor
+  producer: Datalib team / IBGE methodology
+  citation: ibge2022pnadc
+
+# --- Survey-program-specific (used as adaptation tag for non-standard surveys) ---
+MICS:
+  name: Multiple Indicator Cluster Surveys
+  description: UNICEF-led MICS standard variable set (used when datalib stores MICS-harmonized data)
+  scope: global
+  domain: nutrition
+  producer: UNICEF
+  url: https://mics.unicef.org
+  citation: unicef2023mics
+
+DHS:
+  name: Demographic and Health Surveys
+  description: USAID/ICF DHS standard variable set
+  scope: global
+  domain: health
+  producer: ICF International
+  url: https://dhsprogram.com
+  citation: dhs2023

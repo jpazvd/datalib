@@ -1,0 +1,242 @@
+# =============================================================================
+# datalib country registry
+# -----------------------------------------------------------------------------
+# Authoritative list of ISO 3166-1 alpha-3 codes recognised by datalib, with
+# region/income-level metadata used by `_dtlb_ctrycheck` and the catalog frame.
+#
+# Schema:
+#   <ISO3>:
+#     name:          full English name
+#     iso2:          two-letter ISO code (optional)
+#     iso_numeric:   numeric ISO code (optional)
+#     region:        World Bank region (EAP, ECA, LAC, MNA, NAR, SAR, SSA, WLD)
+#     subregion:     human-readable subregion (free-text)
+#     income_level:  WB classification (LIC, LMC, UMC, HIC, NCL = not classified)
+#     unicef_region: UNICEF region (LACRO, ECARO, MENARO, EAPRO, ESARO, WCARO, ROSA)
+#
+# Add a new country: append an entry following ISO 3166-1 alphabetic order.
+# Sources: World Bank country metadata API, UNICEF regional groupings.
+# =============================================================================
+
+# --- Latin America and Caribbean (LAC) ---------------------------------------
+ARG:
+  name: Argentina
+  iso2: AR
+  iso_numeric: 32
+  region: LAC
+  subregion: South America
+  income_level: UMC
+  unicef_region: LACRO
+
+BOL:
+  name: Bolivia
+  iso2: BO
+  iso_numeric: 68
+  region: LAC
+  subregion: South America
+  income_level: LMC
+  unicef_region: LACRO
+
+BRA:
+  name: Brazil
+  iso2: BR
+  iso_numeric: 76
+  region: LAC
+  subregion: South America
+  income_level: UMC
+  unicef_region: LACRO
+
+CHL:
+  name: Chile
+  iso2: CL
+  iso_numeric: 152
+  region: LAC
+  subregion: South America
+  income_level: HIC
+  unicef_region: LACRO
+
+COL:
+  name: Colombia
+  iso2: CO
+  iso_numeric: 170
+  region: LAC
+  subregion: South America
+  income_level: UMC
+  unicef_region: LACRO
+
+MEX:
+  name: Mexico
+  iso2: MX
+  iso_numeric: 484
+  region: LAC
+  subregion: Central America
+  income_level: UMC
+  unicef_region: LACRO
+
+PER:
+  name: Peru
+  iso2: PE
+  iso_numeric: 604
+  region: LAC
+  subregion: South America
+  income_level: UMC
+  unicef_region: LACRO
+
+# --- Sub-Saharan Africa (SSA) ------------------------------------------------
+ETH:
+  name: Ethiopia
+  iso2: ET
+  iso_numeric: 231
+  region: SSA
+  subregion: Eastern Africa
+  income_level: LIC
+  unicef_region: ESARO
+
+GHA:
+  name: Ghana
+  iso2: GH
+  iso_numeric: 288
+  region: SSA
+  subregion: Western Africa
+  income_level: LMC
+  unicef_region: WCARO
+
+KEN:
+  name: Kenya
+  iso2: KE
+  iso_numeric: 404
+  region: SSA
+  subregion: Eastern Africa
+  income_level: LMC
+  unicef_region: ESARO
+
+NGA:
+  name: Nigeria
+  iso2: NG
+  iso_numeric: 566
+  region: SSA
+  subregion: Western Africa
+  income_level: LMC
+  unicef_region: WCARO
+
+ZAF:
+  name: South Africa
+  iso2: ZA
+  iso_numeric: 710
+  region: SSA
+  subregion: Southern Africa
+  income_level: UMC
+  unicef_region: ESARO
+
+# --- South Asia (SAR) --------------------------------------------------------
+BGD:
+  name: Bangladesh
+  iso2: BD
+  iso_numeric: 50
+  region: SAR
+  subregion: Southern Asia
+  income_level: LMC
+  unicef_region: ROSA
+
+IND:
+  name: India
+  iso2: IN
+  iso_numeric: 356
+  region: SAR
+  subregion: Southern Asia
+  income_level: LMC
+  unicef_region: ROSA
+
+PAK:
+  name: Pakistan
+  iso2: PK
+  iso_numeric: 586
+  region: SAR
+  subregion: Southern Asia
+  income_level: LMC
+  unicef_region: ROSA
+
+# --- East Asia and Pacific (EAP) ---------------------------------------------
+CHN:
+  name: China
+  iso2: CN
+  iso_numeric: 156
+  region: EAP
+  subregion: Eastern Asia
+  income_level: UMC
+  unicef_region: EAPRO
+
+IDN:
+  name: Indonesia
+  iso2: ID
+  iso_numeric: 360
+  region: EAP
+  subregion: South-eastern Asia
+  income_level: UMC
+  unicef_region: EAPRO
+
+PHL:
+  name: Philippines
+  iso2: PH
+  iso_numeric: 608
+  region: EAP
+  subregion: South-eastern Asia
+  income_level: LMC
+  unicef_region: EAPRO
+
+VNM:
+  name: Vietnam
+  iso2: VN
+  iso_numeric: 704
+  region: EAP
+  subregion: South-eastern Asia
+  income_level: LMC
+  unicef_region: EAPRO
+
+# --- Europe and Central Asia (ECA) -------------------------------------------
+TUR:
+  name: Turkey
+  iso2: TR
+  iso_numeric: 792
+  region: ECA
+  subregion: Western Asia
+  income_level: UMC
+  unicef_region: ECARO
+
+UKR:
+  name: Ukraine
+  iso2: UA
+  iso_numeric: 804
+  region: ECA
+  subregion: Eastern Europe
+  income_level: LMC
+  unicef_region: ECARO
+
+# --- Middle East and North Africa (MNA) --------------------------------------
+EGY:
+  name: Egypt
+  iso2: EG
+  iso_numeric: 818
+  region: MNA
+  subregion: Northern Africa
+  income_level: LMC
+  unicef_region: MENARO
+
+JOR:
+  name: Jordan
+  iso2: JO
+  iso_numeric: 400
+  region: MNA
+  subregion: Western Asia
+  income_level: LMC
+  unicef_region: MENARO
+
+# --- Aggregates / world ------------------------------------------------------
+WLD:
+  name: World
+  iso2: WW
+  iso_numeric: 0
+  region: WLD
+  subregion: Aggregate
+  income_level: NCL
+  unicef_region: ALL

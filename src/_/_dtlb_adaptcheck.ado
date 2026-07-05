@@ -1,0 +1,87 @@
+*******************************************************
+** _dtlb_adaptcheck.ado 
+* Author: Joao Pedro Azevedo
+*! Version: 1.0       Date: <2024-08-15>
+** Description: 
+* This program checks the surveys archived in the datalib 
+* repository. It extracts unique adaptation names based on the 
+* folder structure and filenames following a specified pattern.
+*
+** Filename patterns:
+* MASTER FILE: - <country>_<year>_<survey>_<vintage>_m_<module>
+* ADAPTATION FILE: - <country>_<year>_<survey>_<mastervintage>_m_<adaptationvintage>_a_<adaptationname>_<module>
+*
+** Folder structure patterns:
+* - datalib/<country>/<country>_<year>_<survey>/<country>_<year>_<survey>_<vintage>_m/
+* - datalib/<country>/<country>_<year>_<survey>/<country>_<year>_<survey>_<mastervintage>_m_<adaptationvintage>_a_<adaptationname>/
+*******************************************************
+
+capture program drop _dtlb_adaptcheck
+program define _dtlb_adaptcheck, rclass
+
+    version 15
+
+    syntax, path(string)
+
+    * Extract the list of subfolders in the specified path
+    local list : dir "`path'/" dirs "*"
+
+    * Initialize an empty macro to hold adaptation names and a counter
+    local adaptations
+    local adaptcount = 0
+
+    foreach folder in `list' {
+        * Check if the folder matches the pattern for an adaptation
+        if strpos("`folder'", "_a_") {
+            * Extract the adaptation name
+            local adaptationname = substr("`folder'", strpos("`folder'", "_a_") + 3, .)
+            local adaptationname = upper(word("`adaptationname'", 1))
+            local adaptations "`adaptations' `adaptationname'"
+            local adaptcount = `adaptcount' + 1
+        }
+    }
+
+    * Trim the final list of adaptations
+    local adaptations = trim("`adaptations'")
+
+    * Display the list of adaptation names if any were found
+    if ("`adaptations'" == "") {
+        di as err "No adaptations found in the specified folder."
+        return local adaptations "0"
+        return local adaptcount = 0
+    }
+    else {
+        di "Adaptations found: `adaptations'"
+        di "Total number of adaptations: `adaptcount'"
+        return local adaptations "`adaptations'"
+        return local adaptcount = `adaptcount'
+    }
+
+end
+
+
+/*******************************************************
+ Usage Examples:
+
+* List the adaptation names and the total number of adaptations available in the specified path
+_dtlb_adaptcheck, path("D:\datalib\BGD\BGD_2019_MICS")
+return list
+
+* List the adaptation names and the total number of adaptations available in the specified path
+_dtlb_adaptcheck, path("D:\datalib\BRA\BRA_2001_PNAD")
+return list
+
+* List the adaptation names and the total number of adaptations available in the specified path
+_dtlb_adaptcheck, path("D:\datalib\/BRA/BRA_2024_PNADC")
+return list
+
+* List the adaptation names and the total number of adaptations available in the specified path
+_dtlb_adaptcheck, path("D:\datalib\/BRA/BRA_2015_PNAD")
+return list
+
+* List the adaptation names and the total number of adaptations available in the specified path
+_dtlb_adaptcheck, path("D:\datalib\/BRA/BRA_1981_PNAD")
+return list
+
+*******************************************************
+

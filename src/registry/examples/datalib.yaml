@@ -1,0 +1,77 @@
+# =============================================================================
+# Per-survey metadata — example
+# -----------------------------------------------------------------------------
+# This is a SAMPLE metadata file demonstrating the schema for a survey master
+# folder. In production, this file lives at:
+#
+#   ${datalib}/<CCC>/<CCC_YYYY_SSSS>/<CCC_YYYY_SSSS_vNN_M>/datalib.yaml
+#
+# e.g. ${datalib}/BRA/bra_2015_pnad/bra_2015_pnad_v01_m/datalib.yaml
+#
+# `_dtlb_catalog, scan` walks the tree and reads these files. Fields with
+# (auto) annotation are populated by the scanner; researchers fill the rest.
+# =============================================================================
+
+# --- Identifiers (auto-populated from folder name) ---------------------------
+country: BRA                  # ISO 3166-1 alpha-3; must exist in countries.yaml
+year: 2015                    # survey reference year
+survey: PNAD                  # acronym, uppercase
+version_master: v01           # master vintage (matches folder _vNN_M segment)
+
+# --- Adaptations registered for this master ----------------------------------
+adaptations:
+  - family: dtz81             # must exist in harmonizations.yaml
+    version: v01
+
+# --- Provenance --------------------------------------------------------------
+producer: Instituto Brasileiro de Geografia e Estatística (IBGE)
+producer_iso: BRA
+url: https://www.ibge.gov.br/estatisticas/sociais/populacao/pnad
+citation: |
+  IBGE (2016). Pesquisa Nacional por Amostra de Domicílios 2015:
+  Notas metodológicas. Rio de Janeiro: Instituto Brasileiro de Geografia
+  e Estatística.
+license: public               # public | restricted | licensed
+license_notes: ""
+
+# --- Modules available -------------------------------------------------------
+# These are the dataset variants stored in data/stata/ — module names must
+# match the file naming convention used by the producer.
+modules:
+  - dom                       # household-level (domicílios)
+  - pes                       # person-level (pessoas)
+  - both                      # merged household+person
+
+# --- Statistics (auto-computed by _dtlb_catalog scanner) ---------------------
+n_obs:
+  dom: 71891
+  pes: 356904
+  both: 356904
+n_vars:
+  dom: 23
+  pes: 287
+  both: 305
+
+# --- Provenance & integrity --------------------------------------------------
+date_received: 2016-09-30     # date received from producer
+date_added: 2024-03-18        # date added to datalib (auto if absent)
+last_updated: 2024-03-18      # auto-updated on rescan
+checksum_sha256:              # auto-computed; one entry per stata file
+  wrk_PNAD2015_dom.dta: ""
+  wrk_PNAD2015_pes.dta: ""
+  wrk_PNAD2015_both.dta: ""
+
+# --- Free-form notes ---------------------------------------------------------
+notes: |
+  PNAD 2015 is the final year of the annual PNAD before its replacement by
+  PNADC. The DTZ81 adaptation provides the 1981+ harmonized variables.
+  See ../bra_2012_pnadc onwards for the continuous successor survey.
+
+# --- Tags (free-form, used by `datalib, search`) -----------------------------
+tags:
+  - household
+  - poverty
+  - inequality
+  - labor
+  - education
+  - brazil

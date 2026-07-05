@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datalib"
+version = "0.1.0"
+description = "Access the IHSN-organized survey microdata archive (get / put / check)."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "UNICEF datalib", email = "jpazevedo@unicef.org" }]
+license = { text = "MIT" }
+dependencies = ["pandas", "pyreadstat"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["datalib*"]
