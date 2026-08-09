@@ -1,0 +1,14 @@
+# Provenance of this adaptation vintage.
+#
+# An adaptation has no producer delivery of its own. Its input is the
+# master vintage below, already present in this survey folder, so this
+# directory holds this note instead of a raw file that never existed.
+#
+# Each module was produced by the harmonization script of the same name
+# under Programs/, which reads the master and writes Data/Stata.
+
+derived_from: ZZA_2022_XHS_v01_M
+relative_path: ../ZZA_2022_XHS_v01_M
+collection: HCL
+adaptation_vintage: v01
+modules: household roster

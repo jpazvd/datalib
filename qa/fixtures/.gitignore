@@ -1,0 +1,8 @@
+# library/ and api/ ARE committed on purpose: the suites must run from a
+# clean clone with no build step. See README.md.
+#
+# What is ignored is only what a RUN leaves behind. _tmp_datalib/ was the
+# generated tree of the retired build.sh and is kept here so an old working
+# copy does not suddenly start offering it for commit.
+_tmp_datalib/
+_tmp_home*/

@@ -2,7 +2,7 @@
 ** datalib
 * Joao Pedro Azevedo
 * Co-author: Minh Cong Nguyen (World Bank)
-*! v1.7.0
+*! v1.7.1
 *******************************************************
 * Library resolution: library() names the archive for a call, and the
 * resolution preamble below is ported from

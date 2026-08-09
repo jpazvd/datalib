@@ -1,0 +1,20 @@
+country: XAA
+year: 2015
+survey: XHS
+vintage: v01
+kind: master
+producer: datalib_makelib
+license: synthetic data - no restrictions
+modules: household roster
+synthetic: true
+module_schema:
+  household:
+    level: household
+    keys: hhid
+    parent: 
+    parentkeys: 
+  roster:
+    level: person
+    keys: hhid pid
+    parent: household
+    parentkeys: hhid

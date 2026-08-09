@@ -1,1 +1,11 @@
 *.dta.zip filter=lfs diff=lfs merge=lfs -text
+
+# Stata datasets are binary, but git only knows that by heuristic: a .dta
+# begins "<stata_dta><header>" in plain ASCII, and git looks for a NUL byte
+# in the first 8000. Measured 2026-08-09: all 18 committed fixture datasets
+# do carry an early NUL, so the heuristic is right TODAY -- and each also
+# carries 15-97 CR/LF bytes in that window, which core.autocrlf=true would
+# rewrite the moment one generated file happened to place its first NUL
+# later. The fixture now ships publicly, so the correctness of what a user
+# downloads should not rest on that.
+*.dta binary

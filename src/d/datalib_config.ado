@@ -2,7 +2,7 @@
 * datalib_config: read the operator's datalib configuration
 * Author: Joao Pedro Azevedo
 * Co-author: Minh Cong Nguyen (World Bank)
-*! v1.6.0  2026-08-05
+*! v1.7.1  2026-08-05
 *******************************************************
 * Thin alias for -getuserconfig-, under the datalib_* name used by the R and
 * Python legs (datalib_config() there). Every option is passed through
@@ -24,7 +24,7 @@ program define datalib_config, rclass
 
     version 15
 
-    syntax [, USER(string) CONFIG(string) CONFIGDIR(string) QUIETly EDIT CREATE ROOT(string) LIST]
+    syntax [, USER(string) CONFIG(string) CONFIGDIR(string) QUIETly EDIT CREATE ROOT(string) LIST RETRYVolumes]
 
     * ---- list: every configuration found, which one wins, and its state ----
     * "Which datalib am I running, against which root?" is two questions, and
@@ -34,6 +34,48 @@ program define datalib_config, rclass
     * the adopath wins silently.
     if ("`list'"!="") {
         _dtlb_config_list
+        exit
+    }
+
+    * Forget which volumes were recorded unreachable. _dl_islib skips a
+    * recorded volume WITHOUT probing it, which is the point -- but a drive
+    * that comes back would stay invisible, so the record has to be
+    * forgettable, and by a command rather than by knowing which file to
+    * delete.
+    if ("`retryvolumes'"!="") {
+        capture __dtlb_userhome
+        if (_rc) {
+            display as error "datalib_config: cannot locate your home directory"
+            exit 198
+        }
+        local dhome = subinstr(`"`r(datalib_home)'"', "\", "/", .)
+        local memof `"`dhome'/offline_volumes.txt"'
+
+        local cleared ""
+        capture confirm file `"`memof'"'
+        if (_rc==0) {
+            tempname rh
+            file open `rh' using `"`memof'"', read text
+            file read `rh' rline
+            while (r(eof)==0) {
+                local rv = strtrim(upper(`"`macval(rline)'"'))
+                if (`"`rv'"'!="") {
+                    global dtlb_dead_`rv' ""
+                    local cleared `"`cleared' `rv'"'
+                }
+                file read `rh' rline
+            }
+            file close `rh'
+            capture erase `"`memof'"'
+        }
+        global dtlb_deadmemo_loaded ""
+
+        if (`"`cleared'"'=="") {
+            display as text "No volumes were recorded unreachable; nothing to forget."
+        }
+        else {
+            display as text `"Forgot:`cleared'. They will be probed again on the next lookup, which costs the operating system's timeout if a drive is still down."'
+        }
         exit
     }
 

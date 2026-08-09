@@ -8,7 +8,7 @@ abstract: >-
   on. In production at the World Bank and at UNICEF, and published as a worked
   example for any institution standing up an archive of its own.
 type: software
-version: 1.7.0
+version: 1.7.1
 date-released: "2026-08-08"
 license: MIT
 repository-code: "https://github.com/jpazvd/datalib"

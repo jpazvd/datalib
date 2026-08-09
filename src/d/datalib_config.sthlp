@@ -1,6 +1,6 @@
 {smcl}
 {hline}
-{help datalib}{right:Version 1.2.0}
+{help datalib}{right:Version 1.7.1}
 {cmd:help datalib_config}{right:Author: Joao Pedro Azevedo}
 {right:Date: 2026-08-05}
 {hline}
@@ -17,11 +17,34 @@
 
 {p 6 16 2}{cmd:datalib_config}{cmd:,} {opt edit} [{opt user(name)} {opt config(file)} {opt configdir(dir)}]{p_end}
 
+{p 6 16 2}{cmd:datalib_config}{cmd:,} {opt list}{p_end}
+
+{p 6 16 2}{cmd:datalib_config}{cmd:,} {opt retryv:olumes}{p_end}
+
 {title:Description}
-{pstd}{cmd:datalib_config} is an alias for {helpb getuserconfig}, under the
-{cmd:datalib_*} name the R and Python legs use for the same operation. Every
-option is passed through and every saved result is the one {cmd:getuserconfig}
-returned.{p_end}
+{pstd}{cmd:datalib_config} is mostly an alias for {helpb getuserconfig}, under
+the {cmd:datalib_*} name the R and Python legs use for the same operation. For
+every option below except {opt list} and {opt retryvolumes}, the option is
+passed through unchanged and every saved result is the one
+{cmd:getuserconfig} returned.{p_end}
+
+{pstd}{opt list} and {opt retryvolumes} are handled here and do not reach
+{cmd:getuserconfig}: they report and repair state that belongs to this
+package rather than to the configuration file.{p_end}
+
+{title:Reporting and repair}
+{pstd}{opt list} shows every configuration source that is present, which one
+is in force, and — separately — which {cmd:datalib.ado} is answering. Those
+are two questions, and an operator with more than one answer to either has no
+other way to see it: two installed packages can both provide {cmd:datalib}
+and whichever is first on the adopath wins silently.{p_end}
+
+{pstd}{opt retryvolumes} forgets which drives were recorded unreachable. When
+a mapped drive does not respond, datalib records it and skips it thereafter
+{it:without probing it again}, because probing a disconnected share costs the
+operating system's own timeout — measured at over six minutes. That record
+has to be forgettable, or a drive that comes back would stay invisible. Run
+this after reconnecting one.{p_end}
 
 {pstd}Two names for one command is deliberate. The command it wraps is not
 datalib-specific — one configuration file is meant to serve sibling tools, and

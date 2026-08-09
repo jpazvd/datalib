@@ -1,0 +1,30 @@
+country: XAA
+year: 2021
+survey: XSA
+vintage: v01
+kind: master
+producer: datalib_makelib
+license: synthetic data - no restrictions
+modules: school classroom teacher student
+synthetic: true
+module_schema:
+  school:
+    level: school
+    keys: schid
+    parent: 
+    parentkeys: 
+  classroom:
+    level: classroom
+    keys: schid clsid
+    parent: school
+    parentkeys: schid
+  teacher:
+    level: teacher
+    keys: schid clsid tchid
+    parent: classroom
+    parentkeys: schid clsid
+  student:
+    level: student
+    keys: schid clsid stuid
+    parent: classroom
+    parentkeys: schid clsid
