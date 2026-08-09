@@ -1,7 +1,8 @@
 *******************************************************
 ** _dtlb_vcheck: Datalib Vintage Check Utility
 * Author: Joao Pedro Azevedo
-*! Version: 1.2.0       Date: 2024-08-18
+* Co-author: Minh Cong Nguyen (World Bank)
+*! Version: 1.2.1       Date: 2024-08-18
 ** Description: 
 * This program checks the vintage of data archived 
 * in the datalib repository.
@@ -32,19 +33,20 @@ program define _dtlb_vcheck, rclass
     local Mcheck 0
     local Acheck 0
 
-    * Loop through all folders
+    * Loop through all folders. Folder case is normalized to lower() so
+    * that the checks work on case-sensitive filesystems.
     foreach folder in `list' {
-         
-        * Extract list of master data only 
-        local Mflag = word(subinstr("`folder'","_"," ",.),-1)
+
+        local lfolder = lower("`folder'")
+
+        * Extract list of master data only
+        local Mflag = word(subinstr("`lfolder'","_"," ",.),-1)
         if ("`Mflag'" == "m") {
             local MFolders "`MFolders' `folder'"
             local Mcheck = 1
         }
-
-        local Mflag = word(subinstr("`folder'","_"," ",.),-1)
-        if ("`Mflag'" != "m") {
-            local Mflag = word(subinstr("`folder'","_"," ",.),-2)
+        else {
+            local Mflag = word(subinstr("`lfolder'","_"," ",.),-2)
             if ("`Mflag'" == "a") {
                 local AFolders "`AFolders' `folder'"
                 local Acheck = 1

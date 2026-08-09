@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 0.1  datalib / UNICEF}{...}
+{* *! version 1.6.0  datalib / UNICEF}{...}
 {title:Title}
 
 {p 4 8}{bf:_dtlb_check} {hline 2} Validate a datalib archive against the IHSN folder template and enforce MASTER / HARMONIZED separation{p_end}
@@ -50,7 +50,7 @@ non-harmonized file inside a {cmd:_A_} folder). Matching is case-insensitive.{p_
 {title:Examples}
 
 {p 8 8}{cmd:. _dtlb_check , path("F:/datalib")}{p_end}
-{p 8 8}{cmd:. _dtlb_check , path("F:/datalib") country(BRA)}{p_end}
+{p 8 8}{cmd:. _dtlb_check , path("F:/datalib") country(XAA)}{p_end}
 {p 8 8}{cmd:. _dtlb_check , path("F:/datalib") strict}{p_end}
 
 

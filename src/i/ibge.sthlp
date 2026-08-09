@@ -1,6 +1,6 @@
 {smcl}
 {hline}
-{help ibge}{right:Version 1.0}
+{help ibge}{right:Version 1.0.1}
 {right:Author: Joao Pedro Azevedo}
 {right:Date: 2024-08-18}
 {hline}
@@ -69,11 +69,12 @@
 {synopt:{cmd:r(saving)}}Path where the processed data files were saved.{p_end}
 {synoptline}
 
-{title:Author}
-{p 4 4 2}Joao Pedro Azevedo (jpazevedo@unicef.org){p_end}
+{title:Authors}
+{p 4 4 2}Joao Pedro Azevedo, UNICEF (jpazevedo@unicef.org){p_end}
+{p 4 4 2}Minh Cong Nguyen, World Bank{p_end}
 
 {title:Version}
-{p 4 4 2}1.0{p_end}
+{p 4 4 2}1.0.1{p_end}
 
 {title:Date}
 {p 4 4 2}2024-03-21{p_end}
@@ -81,5 +82,5 @@
 {title:Also see}
 
 {psee}
-Supplementary functions: {helpb _mkdir} {helpb _dlw} {helpb datazoom_pnad} {helpb datazoom_pnadcontinua}
+Supplementary functions: {helpb _dtlb_mkdir} {helpb _dtlb_load} {helpb datazoom_pnad} {helpb datazoom_pnadcontinua}
 {p_end}

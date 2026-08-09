@@ -1,6 +1,6 @@
 {smcl}
 {hline}
-{help datalib}{right:Version 1.01}
+{help datalib}{right:Version 1.6.0}
 {cmd:help _dlw}{right:Author: Joao Pedro Azevedo}
 {right:Date: 2024-08-18}
 {hline}
@@ -41,17 +41,17 @@
 {synoptline}
 
 {title:Examples}
-{p 6 16 2}Loads and processes the latest available survey data for Brazil in 2012 from the PNAD collection:{p_end}
-{p 8 12}{stata "_dlw , country(BRA) year(2012) survey(PNAD)"}{p_end}
+{p 6 16 2}Loads and processes the latest available survey data for Brazil in 2015 from the PNAD collection:{p_end}
+{p 8 12}{stata "_dtlb_load , country(XAA) year(2015) survey(XHS)"}{p_end}
 
 {p 6 16 2}Loads and processes all available data modules for the specified survey:{p_end}
-{p 8 12}{stata "_dlw , country(BRA) survey(PNADC)"}{p_end}
+{p 8 12}{stata "_dtlb_load , country(XAA) survey(XHS)"}{p_end}
 
 {p 6 16 2}Loads a specific module from the PNADC survey in 2012 and views the documentation:{p_end}
-{p 8 12}{stata "_dlw , country(BRA) year(2012) survey(PNADC) MODule(hhmembers) doc"}{p_end}
+{p 8 12}{stata "_dtlb_load , country(XAA) year(2015) survey(XHS) MODule(hhmembers) doc"}{p_end}
 
 {p 6 16 2}Loads and processes data with debugging output enabled:{p_end}
-{p 8 12}{stata "_dlw , country(BRA) year(2012) survey(PNADC) DEBUG"}{p_end}
+{p 8 12}{stata "_dtlb_load , country(XAA) year(2015) survey(XHS) DEBUG"}{p_end}
 
 {title:Saved Results}
 {pstd}{cmd:_dlw} saves the following in {cmd:r()}:{p_end}
@@ -65,17 +65,43 @@
 {synopt:{cmd:r(harmonization)}}Harmonization file name{p_end}
 {synoptline}
 
-{title:Author}
-{p 4 4 2}Joao Pedro Azevedo (jpazevedo@unicef.org){p_end}
+{title:Authors}
+{p 4 4 2}Joao Pedro Azevedo, UNICEF (jpazevedo@unicef.org){p_end}
+{p 4 4 2}Minh Cong Nguyen, World Bank{p_end}
 
 {title:Version}
-{p 4 4 2}1.01{p_end}
+{p 4 4 2}1.4.0{p_end}
 
 {title:Date}
 {p 4 4 2}2024-08-18{p_end}
 
+
+{title:Vintage resolution}
+
+{pstd}{opt vm()} and {opt va()} name the master and adaptation vintage. For {opt vm()},
+all of {cmd:1}, {cmd:01}, {cmd:v01} and {cmd:V01} mean the same thing, as do {cmd:wrk},
+{cmd:WRK}, {cmd:vwrk} and {cmd:vWRK} for the working vintage.{p_end}
+
+{pstd}With {opt vm()} omitted the {bf:latest} vintage loads and is announced, so a log
+records which delivery produced the numbers. A folder named {cmd:{it:..}_vWRK_M} is the
+{bf:working vintage} — the delivery before a public release. It wins the default, but
+never overrides an explicit {opt vm()}; pass {opt wrk} to override deliberately. See
+{helpb datalib##vintages:datalib}.{p_end}
+
+{title:Saved results (vintage)}
+
+{synoptset 26 tabbed}{...}
+{synopt:{cmd:r(vintage)}}the vintage actually loaded{p_end}
+{synopt:{cmd:r(vintage_source)}}how it was chosen: {cmd:explicit}, {cmd:latest}, {cmd:wrk-default} or {cmd:wrk-forced}{p_end}
+{synopt:{cmd:r(mastervintages)}}every master vintage in the survey folder, published and working{p_end}
+{synopt:{cmd:r(adaptationvintages)}}every adaptation vintage{p_end}
+{synoptline}
+
+{pstd}The two lists are populated whenever the corresponding vintage was left to the
+command, so a script can branch on what exists rather than guess.{p_end}
+
 {title:Also see}
 
 {psee}
-Suplementary functions: {helpb datalib} {helpb _dlw} {helpb _mkdir} {helpb _ctrycheck} {helpb _svycheck} {helpb _vcheck} {helpb _adaptcheck}
+Supplementary functions: {helpb datalib} {helpb _dtlb_load} {helpb _dtlb_mkdir} {helpb _dtlb_ctrycheck} {helpb _dtlb_svycheck} {helpb _dtlb_vcheck} {helpb _dtlb_adaptcheck}
 {p_end}

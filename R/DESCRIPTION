@@ -1,9 +1,10 @@
 Package: datalib
 Title: Access the IHSN-Organized Survey Microdata Archive
-Version: 0.1.0
+Version: 1.7.0
 Authors@R:
-    person("UNICEF", "datalib", email = "jpazevedo@unicef.org",
-           role = c("aut", "cre"))
+    c(person("Joao Pedro", "Azevedo", email = "jpazevedo@unicef.org",
+             role = c("aut", "cre"), comment = "UNICEF"),
+      person("Minh Cong", "Nguyen", role = "aut", comment = "World Bank"))
 Description: Read (dl_get), deposit (dl_put) and validate (dl_check) survey
     microdata organized in the datalib / IHSN folder taxonomy. Mirrors the Stata
     and Python members of the datalib family; option names and values are shared
@@ -11,7 +12,10 @@ Description: Read (dl_get), deposit (dl_put) and validate (dl_check) survey
 License: MIT
 Encoding: UTF-8
 Imports:
-    haven
+    haven,
+    yaml,
+    fs
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 RoxygenNote: 7.2.3

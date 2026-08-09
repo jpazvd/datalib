@@ -1,6 +1,6 @@
 *******************************************************************************
 * yaml_read
-*! v 1.9.2   22Feb2026               by Joao Pedro Azevedo (UNICEF)
+*! v 2.0.0   06Jul2026               by Joao Pedro Azevedo (UNICEF)
 * Read YAML file into Stata (dataset by default, or frame)
 * v1.9.2: Strip quotes from list item values in canonical parser (parity with Mata bulk)
 * v1.9.1: Fix parent_stack contamination for sibling keys; add source_org to indicators preset
@@ -384,17 +384,32 @@ program define yaml_read, rclass
             }
         }
 
+        * Row count of the fast-read table (one row per key/field pair)
+        if (`use_frame' == 1) {
+            frame `frame': local _fr_n = _N
+        }
+        else {
+            local _fr_n = _N
+        }
         return local filename "`using'"
         return local yaml_mode "fastread"
         return scalar cache_hit = 0
+        return scalar n_keys = `_fr_n'
         exit 0
     }
 
     * Fast-read cache hit (skip parse)
     if ("`fastread'" != "" & `skip_parse' == 1) {
+        if (`use_frame' == 1) {
+            frame `frame': local _fr_n = _N
+        }
+        else {
+            local _fr_n = _N
+        }
         return local filename "`using'"
         return local yaml_mode "fastread"
         return scalar cache_hit = 1
+        return scalar n_keys = `_fr_n'
         exit 0
     }
 
@@ -514,12 +529,87 @@ program define yaml_read, rclass
             local is_list = (substr(`"`trimmed'"', 1, 2) == "- ")
         }
 
+        * ----- Sequence-of-mappings item: "- key: value" (v2.0.0) -----------
+        * The item becomes a structural row <list>_N (type list_map); its
+        * inline first pair and the following deeper-indented lines are
+        * parsed as ordinary key:value children of <list>_N. One flat
+        * mapping level per item is supported.
+        if (`is_list') {
+            local item_probe = strtrim(substr(`"`trimmed'"', 3, .))
+            local _ifc = substr(`"`item_probe'"', 1, 1)
+            if (`"`_ifc'"' != `"""' & `"`_ifc'"' != "'" & ///
+                regexm(`"`item_probe'"', "^[^:#]+:([ ]|$)")) {
+
+                * Resolve the list key this item belongs to. On the first
+                * item, derive it from the current context (as scalar items
+                * do); on later items, last_key is stale (it points at the
+                * previous item's last child), so reuse the per-level state.
+                local lv = `n_levels'
+                if ("`mapitem_parent_`lv''" == "`parent_stack'" & "`mapitem_key_`lv''" != "") {
+                    local lk "`mapitem_key_`lv''"
+                }
+                else {
+                    local lk "`last_key'"
+                    if ("`parent_stack'" != "" & strpos("`last_key'", "`parent_stack'") != 1) {
+                        local lk "`parent_stack'_`last_key'"
+                    }
+                    local mapitem_key_`lv' "`lk'"
+                    local mapitem_parent_`lv' "`parent_stack'"
+                    local mapitem_idx_`lv' = 0
+                }
+                local mapitem_idx_`lv' = `mapitem_idx_`lv'' + 1
+                local _mi = `mapitem_idx_`lv''
+                local full_key "`lk'_`_mi'"
+
+                * Store the structural item row
+                local n_keys = `n_keys' + 1
+                if (`use_frame' == 1) {
+                    frame `frame' {
+                        local newobs = _N + 1
+                        qui set obs `newobs'
+                        qui replace key = "`full_key'" in `newobs'
+                        qui replace level = `level' in `newobs'
+                        qui replace parent = "`lk'" in `newobs'
+                        qui replace type = "list_map" in `newobs'
+                    }
+                }
+                else {
+                    local newobs = _N + 1
+                    qui set obs `newobs'
+                    qui replace key = "`full_key'" in `newobs'
+                    qui replace level = `level' in `newobs'
+                    qui replace parent = "`lk'" in `newobs'
+                    qui replace type = "list_map" in `newobs'
+                }
+
+                * Synthetic descent: children of this item live two columns
+                * deeper (the inline pair defines that indent level)
+                local n_levels = `n_levels' + 1
+                local indent_`n_levels' = `indent' + 2
+                local parent_`n_levels' "`full_key'"
+                local parent_stack "`full_key'"
+                local current_indent = `indent' + 2
+                local indent = `indent' + 2
+                local level = `n_levels'
+                if (`level' > `max_level') local max_level = `level'
+
+                * Hand the inline first pair to the key:value logic below
+                local trimmed `"`item_probe'"'
+                local is_list = 0
+            }
+        }
+        * --------------------------------------------------------------------
+
         if (`is_list') {
             * List item - store as separate row with type "list_item"
             local item_value = strtrim(substr(`"`trimmed'"', 3, .))
 
-            * Remove quotes from list item value (matches Mata bulk parser)
-            if (substr(`"`item_value'"', 1, 1) == `"""' | substr(`"`item_value'"', 1, 1) == "'") {
+            * Remove quotes from list item value only when first and last
+            * characters are the same quote char (one rule in all parsers)
+            local _fc = substr(`"`item_value'"', 1, 1)
+            local _lc = substr(`"`item_value'"', -1, 1)
+            if (length(`"`item_value'"') >= 2 & `"`_fc'"' == `"`_lc'"' & ///
+                (`"`_fc'"' == `"""' | `"`_fc'"' == "'")) {
                 local item_value = substr(`"`item_value'"', 2, length(`"`item_value'"') - 2)
             }
 
@@ -600,7 +690,11 @@ program define yaml_read, rclass
         else {
             * Reset list index when we encounter a non-list item
             local list_index = 0
-            
+
+            * A key:value line at this level ends any sequence-of-mappings
+            * bookkeeping for the level (the list is over)
+            local mapitem_key_`n_levels' ""
+
             * Key-value pair or nested key
             local colon_pos = strpos(`"`trimmed'"', ":")
 
@@ -611,9 +705,13 @@ program define yaml_read, rclass
                 * Reset vtype for this new key-value pair
                 local vtype ""
                 
-                * Remove quotes from value if present (and remember it was quoted)
+                * Remove quotes from value only when the first and last
+                * characters are the same quote char (one rule in all parsers)
                 local was_quoted = 0
-                if (substr(`"`value'"', 1, 1) == `"""' | substr(`"`value'"', 1, 1) == "'") {
+                local _fc = substr(`"`value'"', 1, 1)
+                local _lc = substr(`"`value'"', -1, 1)
+                if (length(`"`value'"') >= 2 & `"`_fc'"' == `"`_lc'"' & ///
+                    (`"`_fc'"' == `"""' | `"`_fc'"' == "'")) {
                     local value = substr(`"`value'"', 2, length(`"`value'"') - 2)
                     local was_quoted = 1
                 }
@@ -665,10 +763,13 @@ program define yaml_read, rclass
                             local next_indent = `next_indent' + 1
                             local tmp = substr(`"`tmp'"', 2, .)
                         }
-                        * Continuation if: deeper indent, not empty/comment, not list, not key:value
+                        * Continuation if: deeper indent, not empty/comment, not list, not key:value.
+                        * A line ending in ':' is a parent key, never a plain-scalar
+                        * continuation (YAML forbids key-shaped plain continuations).
                         if (`next_indent' <= `indent' | `"`next_trim'"' == "" | ///
                             substr(`"`next_trim'"', 1, 1) == "#" | ///
                             substr(`"`next_trim'"', 1, 2) == "- " | ///
+                            substr(`"`next_trim'"', -1, 1) == ":" | ///
                             (strpos(`"`next_trim'"', ":") > 0 & strpos(`"`next_trim'"', ": ") > 0)) {
                             local pending_line `"`line'"'
                             local has_pending = 1
@@ -695,7 +796,8 @@ program define yaml_read, rclass
                 local maxkeylen = 32 - `prefixlen'
                 if (length("`full_key'") > `maxkeylen') {
                     local short_key = substr("`full_key'", 1, `maxkeylen')
-                    if ("`verbose'" != "") {
+                    * Notice is only relevant when locals/scalars are produced
+                    if ("`verbose'" != "" & ("`locals'" != "" | "`scalars'" != "")) {
                         di as text "  (key truncated to `maxkeylen' chars for locals)"
                     }
                 }

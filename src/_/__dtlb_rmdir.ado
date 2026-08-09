@@ -6,6 +6,7 @@
 * subdirectory removal and returns it via r(rc). Callers that treat
 * cleanup as a postcondition (e.g. __dtlb_move_and_clean) can inspect
 * r(rc) and exit with that code rather than assume success.
+*! v1.1.0
 *******************************************************
 capture program drop __dtlb_rmdir
 program define __dtlb_rmdir, rclass

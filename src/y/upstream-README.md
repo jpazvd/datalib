@@ -10,28 +10,26 @@ The `yaml` command provides a complete YAML 1.2 (subset) parser for Stata, enabl
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              yaml.ado                                        │
+│                              yaml.ado                                       │
+│                         (dispatcher only)                                   │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│   ┌─────────┐    ┌─────────┐    ┌──────────┐    ┌─────────┐                │
-│   │  read   │    │  write  │    │ describe │    │  list   │                │
-│   └────┬────┘    └────┬────┘    └────┬─────┘    └────┬────┘                │
-│        │              │              │               │                      │
-│   ┌────┴────┐    ┌────┴────┐    ┌────┴─────┐    ┌───┴────┐                 │
-│   │   get   │    │validate │    │  frames  │    │  clear │                 │
-│   └─────────┘    └─────────┘    └──────────┘    └────────┘                 │
-│                                                                              │
+│  yaml_read.ado     yaml_write.ado    yaml_describe.ado    yaml_list.ado     │
+│  yaml_get.ado      yaml_validate.ado yaml_dir.ado         yaml_frames.ado   │
+│  yaml_clear.ado                                                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│                         Internal Storage                                     │
+│ Helpers (used by yaml_read):                                                │
+│  _yaml_fastread.ado    _yaml_tokenize_line.ado                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                         Internal Storage                                    │
 │  ┌────────────────────────────────────────────────────────────────────┐     │
 │  │  Dataset/Frame Structure:                                          │     │
-│  │  ┌──────────┬────────────┬───────┬────────────┬──────────┐        │     │
-│  │  │   key    │   value    │ level │   parent   │   type   │        │     │
-│  │  ├──────────┼────────────┼───────┼────────────┼──────────┤        │     │
-│  │  │ str244   │ str2000    │ int   │ str244     │ str32    │        │     │
-│  │  └──────────┴────────────┴───────┴────────────┴──────────┘        │     │
+│  │  ┌──────────┬────────────┬───────┬────────────┬──────────┐         │     │
+│  │  │   key    │   value    │ level │   parent   │   type   │         │     │
+│  │  ├──────────┼────────────┼───────┼────────────┼──────────┤         │     │
+│  │  │ str244   │ str2000    │ int   │ str244     │ str32    │         │     │
+│  │  └──────────┴────────────┴───────┴────────────┴──────────┘         │     │
 │  └────────────────────────────────────────────────────────────────────┘     │
-│                                                                              │
+│                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,6 +43,7 @@ The `yaml` command provides a complete YAML 1.2 (subset) parser for Stata, enabl
 | `yaml list` | List keys, values, or children of a key |
 | `yaml get` | Retrieve attributes of a specific key |
 | `yaml validate` | Validate required keys and types |
+| `yaml dir` | List all YAML data in memory (dataset and frames) |
 | `yaml frames` | List all YAML frames in memory |
 | `yaml clear` | Clear YAML data from memory |
 
@@ -105,6 +104,24 @@ countries_1     BRA     countries   list_item
 countries_2     ARG     countries   list_item
 countries_3     CHL     countries   list_item
 ```
+
+### Fast-Read Data Model
+
+When `yaml read` is called with the `fastread` option, parsing is delegated to
+`_yaml_fastread.ado`, which produces a different (flatter) schema optimized for
+shallow YAML files with one level of section headers:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `key` | str | Top-level section header |
+| `field` | str | Field name within that section |
+| `value` | str | Scalar value or list-item text |
+| `list` | int | 1 = list item, 0 = scalar field |
+| `line` | int | Source file line number |
+
+Fastread does not track `level`, `parent`, or `type`. It rejects anchors,
+aliases, and flow collections, exiting with an error message that suggests
+re-running without `fastread`.
 
 ## Syntax
 
@@ -202,7 +219,7 @@ yaml frames [, detail]
 ### yaml clear
 
 ```stata
-yaml clear [, all frame(name)]
+yaml clear [framename] [, all]
 ```
 
 ## Supported YAML Features
@@ -488,7 +505,6 @@ The `unicefdata` command (v1.4.0) uses this exact pattern:
 - One-off interactive exploration
 - Stata < 16 (use preserve/restore instead)
 - Simple key-value lookups (use `yaml_get`)
-```
 
 ## Version Requirements
 
@@ -500,12 +516,17 @@ The `unicefdata` command (v1.4.0) uses this exact pattern:
 ## File Location
 
 ```
-unicefData/
-└── stata/
-    └── src/
-        └── y/
-            ├── yaml.ado      # Main command file
-            └── README.md     # This documentation
+yaml-dev/
+└── src/
+    ├── y/
+    │   ├── yaml.ado           # Main dispatcher
+    │   ├── yaml_read.ado      # Read subcommand
+    │   ├── yaml_write.ado     # Write subcommand
+    │   ├── yaml.sthlp         # Help file
+    │   └── README.md          # This documentation
+    └── _/
+        ├── _yaml_fastread.ado       # Fast-read parser
+        └── _yaml_tokenize_line.ado  # Streaming tokenizer
 ```
 
 ## Design Principles

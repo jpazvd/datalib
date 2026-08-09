@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.9.2  22Feb2026}{...}
+{* *! version 2.0.0  06Jul2026}{...}
 {vieweralsosee "yaml examples" "help yaml_examples"}{...}
 {vieweralsosee "yaml what's new" "help yaml_whatsnew"}{...}
 {vieweralsosee "" "--"}{...}
@@ -13,7 +13,7 @@
 {viewerjumpto "Stored results" "yaml##results"}{...}
 {viewerjumpto "Author" "yaml##author"}{...}
 {hline}
-{cmd:help yaml}{right:{bf:version 1.9.2}}
+{cmd:help yaml}{right:{bf:version 2.0.0}}
 {hline}
 
 {title:Title}
@@ -66,7 +66,10 @@ This allows the command to work with Stata 14 and later.
 {pstd}
 {bf:Frame option:} Use {opt frame(name)} to store YAML data in a separate Stata
 frame, allowing multiple YAML files in memory simultaneously. This requires
-Stata 16 or later.
+Stata 16 or later. The argument is a {it:logical} name: the {cmd:yaml_} prefix
+is added automatically (and is idempotent, so {cmd:frame(cfg)} and
+{cmd:frame(yaml_cfg)} both address frame {cmd:yaml_cfg}). {cmd:r(frame)}
+reports the full frame name, including the prefix (e.g., {cmd:yaml_cfg}).
 
 
 {marker read}{...}
@@ -93,14 +96,14 @@ Reads a YAML file and parses its contents into the current dataset (default) or 
 {synopt:{opt fastread}}use fast-read parser (speed-first, limited YAML subset){p_end}
 {synopt:{opt fields(string)}}restrict extraction to specific field keys{p_end}
 {synopt:{opt listkeys(string)}}extract list blocks for specified fields (fastread only){p_end}
-{synopt:{opt blockscalars}}capture block scalars in fast-read mode (opt-in){p_end}
+{synopt:{opt blockscalars}}capture block scalars ({cmd:|}, {cmd:>}) in any parse mode (opt-in){p_end}
 {synopt:{opt targets(string)}}early-exit targets for canonical parse (exact keys){p_end}
 {synopt:{opt earlyexit}}stop parsing once all targets are found (canonical){p_end}
 {synopt:{opt stream}}use streaming tokenization for canonical parse{p_end}
 {synopt:{opt index(string)}}materialize an index frame for repeated queries (Stata 16+){p_end}
 {synopt:{opt cache(string)}}cache parsed results in a frame (Stata 16+){p_end}
 {synopt:{opt bulk}}use Mata bulk-load parser for high-performance parsing{p_end}
-{synopt:{opt collapse}}produce wide-format output (use with {cmd:_yaml_collapse} helper){p_end}
+{synopt:{opt collapse}}produce wide-format output (one row per top-level key){p_end}
 {synopt:{opt colfields(string)}}filter collapsed output to specific field names (semicolon-separated){p_end}
 {synopt:{opt maxlevel(#)}}limit collapsed columns by depth (1=no underscores, 2=one underscore, etc.){p_end}
 {synopt:{opt indicators}}preset for wbopendata/unicefdata indicator metadata (implies bulk collapse){p_end}
@@ -125,7 +128,7 @@ The following variables are created in canonical mode:
 {phang2}{cmd:value} - Value as string{p_end}
 {phang2}{cmd:level} - Nesting level (1 = root){p_end}
 {phang2}{cmd:parent} - Parent key name{p_end}
-{phang2}{cmd:type} - Value type (string, numeric, boolean, null, parent){p_end}
+{phang2}{cmd:type} - Value type (string, numeric, boolean, null, parent, list_map){p_end}
 
 {pstd}
 In {opt fastread} mode, the following variables are created:{p_end}
@@ -134,6 +137,38 @@ In {opt fastread} mode, the following variables are created:{p_end}
 {phang2}{cmd:value} - Field value{p_end}
 {phang2}{cmd:list} - 1 if list item, 0 otherwise{p_end}
 {phang2}{cmd:line} - Line number in the YAML file{p_end}
+
+{pstd}
+{bf:Sequences of mappings:} list items that are themselves mappings
+({cmd:- key: value}, including nested mappings under the item) are supported
+by the canonical parser. Each item is stored as a structural row
+{it:list}_{it:N} of type {cmd:list_map}, with the item's keys as its
+children; {cmd:yaml write} re-emits these rows in dash form. The {opt bulk}
+and {opt fastread} parsers {bf:reject} such items with an explicit error
+instead of storing a corrupted representation.
+
+{pstd}
+{bf:Quoting:} one rule applies in all parse modes (canonical, fast-read,
+bulk): surrounding quotes are stripped only when the first and last
+characters of the value are the same quote character; quoted values are
+always typed {cmd:string}; escape sequences are kept literal.
+
+{pstd}
+{bf:Performance options:} the following opt-in options trade generality for
+speed on large files; see {help yaml_whatsnew:what's new} for details.
+{p_end}
+{phang2}{opt bulk} uses a Mata bulk-load parser that reads the whole file
+into memory for vectorized processing; unlike the canonical parser, it
+preserves dots and hyphens in key names (useful for entity codes).{p_end}
+{phang2}{opt collapse} produces wide-format output with one row per
+top-level key (commonly combined with {opt bulk}); {opt colfields(string)}
+restricts the columns to named fields (semicolon-separated) and
+{opt maxlevel(#)} limits columns by nesting depth.{p_end}
+{phang2}{opt strl} stores values as strL, allowing values longer than 2045
+characters.{p_end}
+{phang2}{opt indicators} is a preset for wbopendata/unicefdata indicator
+metadata that enables {opt bulk} and {opt collapse} with a standard
+{cmd:colfields()} selection.{p_end}
 
 
 {marker write}{...}
@@ -158,6 +193,20 @@ Writes Stata data from the current dataset (default) or a frame to a YAML file.
 {synopt:{opt indent(#)}}spaces per indent level; default is 2{p_end}
 {synopt:{opt header(string)}}custom header comment{p_end}
 {synoptline}
+
+{pstd}
+{bf:Literal fidelity:} boolean rows are emitted as {cmd:true}/{cmd:false}
+(not {cmd:1}/{cmd:0}) and null rows as an empty value ({cmd:key:}), so a
+read-write cycle preserves YAML literals. Sequence-of-mappings rows (type
+{cmd:list_map}) are re-emitted in dash form, with the item's first key-value
+pair folded onto the dash line and the remaining children indented beneath it.
+
+{pstd}
+{bf:Note:} rows are written in {it:observation order}. Sorting or dropping
+rows between {cmd:yaml read} and {cmd:yaml write} changes the output and can
+misplace children relative to their parents; list indices are not
+renumbered. Comments and the original quoting style are not preserved: the
+output is a normalized rendering of the stored rows.
 
 {pstd}
 {bf:Note:} To write scalar values to YAML, create scalars first, then use the {opt scalars()} option.
@@ -191,7 +240,9 @@ Displays the structure of YAML data in the current dataset (default) or a frame.
 [{cmd:,} {opt frame(name)} {opt keys} {opt values} {opt sep:arator(string)} {opt child:ren} {opt stata} {opt noh:eader}]
 
 {pstd}
-Lists keys and values from YAML data. Optional {it:parent} filters to keys under that parent.
+Lists keys and values from YAML data. Optional {it:parent} filters to keys under
+that parent. The parent may be a multi-level colon path: {cmd:a:b:c} addresses
+the flattened key {cmd:a_b_c}.
 
 {synoptset 20 tabbed}{...}
 {synopthdr:options}
@@ -200,10 +251,17 @@ Lists keys and values from YAML data. Optional {it:parent} filters to keys under
 {synopt:{opt keys}}return matching keys as delimited list in r(keys){p_end}
 {synopt:{opt values}}return matching values as delimited list in r(values){p_end}
 {synopt:{opt sep:arator(string)}}delimiter for lists; default is space{p_end}
-{synopt:{opt child:ren}}return only immediate children of parent{p_end}
+{synopt:{opt child:ren}}return only immediate children of parent, as bare child names{p_end}
 {synopt:{opt stata}}format output as Stata compound quotes: {cmd:`"item1"' `"item2"'}{p_end}
-{synopt:{opt noh:eader}}suppress column headers in listing{p_end}
+{synopt:{opt noh:eader}}suppress all printed output (results still stored in r()){p_end}
 {synoptline}
+
+{pstd}
+With {opt children}, the returned and displayed keys are {bf:bare child names}:
+the parent prefix is stripped, so {cmd:yaml list indicators, keys children}
+returns {cmd:CME_MRY0T4 CME_MRY0}, not {cmd:indicators_CME_MRY0T4 ...}.
+{cmd:yaml list} also stores the scalar {cmd:r(found)}, equal to 1 if any key
+matched and 0 otherwise.
 
 
 {marker get}{...}
@@ -222,6 +280,14 @@ as separate r() macros. This is useful for querying indicator metadata by code.
 {bf:Colon syntax:} Use {it:parent}{cmd::}{it:keyname} to specify the parent hierarchy.
 For example, {cmd:indicators:CME_MRY0T4} searches for CME_MRY0T4 under indicators.
 This is equivalent to searching for key {cmd:indicators_CME_MRY0T4_*}.
+Colon paths may be multi-level: {cmd:a:b:c} addresses the flattened key
+{cmd:a_b_c}, with the parent/key split made at the {it:last} colon
+(parent {cmd:a_b}, key {cmd:c}).
+
+{pstd}
+{bf:Scalar leaves:} when the key holds a value directly and has no children
+(e.g., {cmd:yaml get input_file} on a top-level scalar), the value is
+returned in {cmd:r(value)}.
 
 {synoptset 20 tabbed}{...}
 {synopthdr:options}
@@ -238,6 +304,7 @@ This is equivalent to searching for key {cmd:indicators_CME_MRY0T4_*}.
 {phang2}{cmd:r(parent)} - the parent hierarchy (if colon syntax used){p_end}
 {phang2}{cmd:r(found)} - 1 if attributes found, 0 otherwise{p_end}
 {phang2}{cmd:r(n_attrs)} - number of attributes found{p_end}
+{phang2}{cmd:r(value)} - the key's own value, when the key is a scalar leaf{p_end}
 {phang2}{cmd:r({it:attribute})} - value for each attribute found (e.g., r(label), r(unit)){p_end}
 
 
@@ -255,7 +322,7 @@ dataset (if it contains YAML data) and any YAML frames (Stata 16+).
 {pstd}
 YAML data is identified by:
 {p_end}
-{phang2}1. Presence of standard YAML variables: {cmd:key}, {cmd:value}, {cmd:level}, {cmd:parent}, {cmd:type}{p_end}
+{phang2}1. Presence of standard YAML variables: {cmd:key}, {cmd:value}, {cmd:level}, {cmd:type}{p_end}
 {phang2}2. The {cmd:_dta[yaml_source]} characteristic set by {cmd:yaml read}{p_end}
 {phang2}3. Frame names with {cmd:yaml_} prefix (for frames){p_end}
 
@@ -458,23 +525,26 @@ custom vectorized parsers and delivers ~60% faster performance.
 
 {synoptset 20 tabbed}{...}
 {p2col 5 20 24 2: Scalars}{p_end}
-{synopt:{cmd:r(n_keys)}}number of keys parsed{p_end}
+{synopt:{cmd:r(n_keys)}}number of keys parsed (canonical and fast-read modes){p_end}
 {synopt:{cmd:r(max_level)}}maximum nesting depth{p_end}
+{synopt:{cmd:r(cache_hit)}}1 if cache was used, 0 otherwise{p_end}
 
 {p2col 5 20 24 2: Macros}{p_end}
 {synopt:{cmd:r(filename)}}name of file read{p_end}
-{synopt:{cmd:r(frame)}}name of frame created (if frame option used){p_end}
-{synopt:{cmd:r(yaml_mode)}}parsing mode: {cmd:canonical} or {cmd:fastread}{p_end}
-{synopt:{cmd:r(cache_hit)}}1 if cache was used, 0 otherwise{p_end}
+{synopt:{cmd:r(frame)}}full name of frame created, including the {cmd:yaml_} prefix (if frame option used){p_end}
+{synopt:{cmd:r(yaml_mode)}}parsing mode: {cmd:canonical}, {cmd:fastread}, or {cmd:bulk}{p_end}
 {synopt:{cmd:r(yaml_*)}}values from YAML file (when {opt locals} specified){p_end}
 
 {pstd}
-{cmd:yaml list} stores the following in {cmd:r()} when {opt keys} or {opt values} specified:
+{cmd:yaml list} stores the following in {cmd:r()}:
 
 {synoptset 20 tabbed}{...}
+{p2col 5 20 24 2: Scalars}{p_end}
+{synopt:{cmd:r(found)}}1 if any key matched, 0 otherwise{p_end}
+
 {p2col 5 20 24 2: Macros}{p_end}
-{synopt:{cmd:r(keys)}}delimited list of matching keys{p_end}
-{synopt:{cmd:r(values)}}delimited list of matching values{p_end}
+{synopt:{cmd:r(keys)}}delimited list of matching keys (with {opt keys}; bare child names with {opt children}){p_end}
+{synopt:{cmd:r(values)}}delimited list of matching values (with {opt values}){p_end}
 {synopt:{cmd:r(parent)}}parent key used for filtering{p_end}
 {p2colreset}{...}
 
@@ -496,18 +566,19 @@ The {opt frame()} option requires Stata 16.0 or later.
 
 {pstd}
 {bf:Block scalars} (multi-line strings with {cmd:|} or {cmd:>}) are supported via
-{opt blockscalars} in fast-read mode and in the canonical parser.
+{opt blockscalars} in all parse modes (canonical, fast-read, and bulk).
 
 {pstd}
 {cmd:fastread} mode is optimized for shallow mappings and list blocks, and does not
-support anchors, aliases, or complex nested structures. Use the canonical parser
-for full YAML compliance.
+support anchors, aliases, or complex nested structures; like {opt bulk}, it
+rejects sequence-of-mappings items ({cmd:- key: value}) with an error. Use the
+canonical parser for full YAML compliance.
 
 {pstd}
-{bf:Phase 2 options} ({opt bulk}, {opt collapse}, {opt strl}) enable high-performance
+{bf:Performance options} ({opt bulk}, {opt collapse}, {opt strl}) enable high-performance
 parsing via Mata. The {opt bulk} option uses a Mata-based parser that loads the
-entire file into memory for vectorized processing. Use {cmd:_yaml_collapse} after
-{opt bulk} to produce wide-format output with one row per top-level key.
+entire file into memory for vectorized processing. Combine with {opt collapse}
+to produce wide-format output with one row per top-level key.
 The {opt strl} option stores values as strL to allow values exceeding 2045 characters.
 
 {pstd}

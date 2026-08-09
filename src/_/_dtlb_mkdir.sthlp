@@ -1,6 +1,6 @@
 {smcl}
 {hline}
-{cmd:help _vcheck}{right:Version 1.02}
+{help datalib}{right:Version 1.6.0}
 {cmd:help _mkdir}{right:Author: Joao Pedro Azevedo}
 {right:Date: 2024-08-18}
 {hline}
@@ -55,15 +55,22 @@
 {synopt:{opt latest}}Uses the latest available survey year if {cmd:year} is not specified.{p_end}
 {synoptline}
 
+
+{title:Read-only libraries}
+
+{pstd}This command refuses to write into a library whose {cmd:.datalib} marker file carries {cmd:readonly: 1}, and exits with error 198 naming the path. The check reads the marker, walking up from the target, rather than comparing path strings -- so it still holds for a copy of the tree, and cannot be defeated by 8.3 short names, junctions, UNC-versus-mapped spellings or case.{p_end}
+
+{pstd}A library built by {helpb datalib_makelib} is marked synthetic ({cmd:demo: true}) but is {it:not} read-only: it is your copy, in your directory, and depositing into it is the point. Read-only is opt-in, for a shared fixture or reference tree you want protected.{p_end}
+
 {title:Examples}
 {p 6 16 2}Creates or checks the directory structure for the 1981 PNAD survey in Brazil.{p_end}
-{p 8 12}{stata "_mkdir , path(D:\datalib\) country(BRA) survey(PNAD) year(1981)" :. _mkdir , path(D:\datalib\) country(BRA) survey(PNAD) year(1981)}{p_end}
+{p 8 12}{stata "_dtlb_mkdir , path(D:\datalib\) country(XAA) survey(XHS) year(1981)" :. _mkdir , path(D:\datalib\) country(XAA) survey(XHS) year(1981)}{p_end}
 
 {p 6 16 2}Creates the directory structure for the 2001 PNAD survey in Brazil, including master and adaptation files.{p_end}
-{p 8 12}{stata "cap: _mkdir , path(D:\datalib\) country(BRA) survey(PNAD) year(2001) vm(01) va(01) adaptation" :. cap: _mkdir , path(D:\datalib\) country(BRA) survey(PNAD) year(2001) vm(01) va(01) adaptation}{p_end}
+{p 8 12}{stata "cap: _mkdir , path(D:\datalib\) country(XAA) survey(XHS) year(2001) vm(01) va(01) adaptation" :. cap: _mkdir , path(D:\datalib\) country(XAA) survey(XHS) year(2001) vm(01) va(01) adaptation}{p_end}
 
 {p 6 16 2}Creates the directory structure for the 2012 PNADC survey in Brazil with adaptation.{p_end}
-{p 8 12}{stata "_mkdir , path(D:\datalib\) country(BRA) survey(PNADC) year(2012) adaptation" :. _mkdir , path(D:\datalib\) country(BRA) survey(PNADC) year(2012) adaptation}{p_end}
+{p 8 12}{stata "_dtlb_mkdir , path(D:\datalib\) country(XAA) survey(XHS) year(2012) adaptation" :. _mkdir , path(D:\datalib\) country(XAA) survey(XHS) year(2012) adaptation}{p_end}
 
 {title:Saved Results}
 {pstd}{cmd:_mkdir} saves the following in {cmd:r()}:{p_end}
@@ -83,11 +90,12 @@
 {synopt:{cmd:r(data_A_stata)}}Path to the Stata adaptation data folder{p_end}
 {synoptline}
 
-{title:Author}
-{p 4 4 2}Joao Pedro Azevedo (jpazevedo@unicef.org){p_end}
+{title:Authors}
+{p 4 4 2}Joao Pedro Azevedo, UNICEF (jpazevedo@unicef.org){p_end}
+{p 4 4 2}Minh Cong Nguyen, World Bank{p_end}
 
 {title:Version}
-{p 4 4 2}1.02{p_end}
+{p 4 4 2}1.2.2{p_end}
 
 {title:Date}
 {p 4 4 2}2024-08-18{p_end}
@@ -95,5 +103,5 @@
 {title:Also see}
 
 {psee}
-Suplementary functions: {helpb datalib} {helpb _dlw} {helpb _mkdir} {helpb _ctrycheck} {helpb _svycheck} {helpb _vcheck} {helpb _adaptcheck}
+Supplementary functions: {helpb datalib} {helpb _dtlb_load} {helpb _dtlb_mkdir} {helpb _dtlb_ctrycheck} {helpb _dtlb_svycheck} {helpb _dtlb_vcheck} {helpb _dtlb_adaptcheck}
 {p_end}

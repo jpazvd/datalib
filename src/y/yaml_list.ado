@@ -1,14 +1,25 @@
 *******************************************************************************
 * yaml_list
-*! v 1.5.1   18Feb2026               by Joao Pedro Azevedo (UNICEF)
+*! v 2.0.0   06Jul2026               by Joao Pedro Azevedo (UNICEF)
 * List keys and values in YAML data
+* v 1.6.0: restore v1.3.x behavior lost in the modular refactor --
+*   (1) with -children-, returned/displayed keys are bare child names
+*       (parent prefix stripped), as documented and as reviewed for the SJ;
+*   (2) -noheader- suppresses all printed output, not just the header;
+*   (3) return scalar r(found) = 1 if any key matched, 0 otherwise;
+*   (4) fix malformed option declaration NoHeader -> NOHeader (capitals must
+*       be a prefix); the typo made -noheader- unrecognizable and corrupted
+*       option parsing (v1.3.0 correctly declared NOHeader);
+*   (5) strip surrounding quotes from the parent argument in the impl (the
+*       wrapper passes it quoted), matching yaml_get; without this the
+*       parent filter silently matched nothing/everything.
 *******************************************************************************
 
 program define yaml_list, rclass
     version 14.0
     
     syntax [anything(name=parent)] [, Frame(string) Keys Values Separator(string) ///
-                                      Children STata NoHeader]
+                                      Children STata NOHeader]
     
     local keys_opt = cond("`keys'" != "", "keys", "")
     local values_opt = cond("`values'" != "", "values", "")
@@ -41,10 +52,17 @@ program define yaml_list, rclass
             foreach _rn of local _return_names {
                 local _rv_`_rn' `"`r(`_rn')'"'
             }
+            local _return_scalars : r(scalars)
+            foreach _rs of local _return_scalars {
+                local _rsv_`_rs' = r(`_rs')
+            }
         }
         * Restore return values outside frame block
         foreach _rn of local _return_names {
             return local `_rn' `"`_rv_`_rn''"'
+        }
+        foreach _rs of local _return_scalars {
+            return scalar `_rs' = `_rsv_`_rs''
         }
     }
     else {
@@ -55,7 +73,7 @@ program define yaml_list, rclass
 end
 
 program define _yaml_list_impl, rclass
-    syntax [anything(name=parent)] [, Keys Values Separator(string) Children STata NoHeader]
+    syntax [anything(name=parent)] [, Keys Values Separator(string) Children STata NOHeader]
     
     * Ensure required variables exist
     capture confirm variable key value
@@ -77,11 +95,18 @@ program define _yaml_list_impl, rclass
     local show_header = ("`noheader'" == "")
     
     * Filter to children if requested
+    * Remove surrounding quotes (the wrapper passes the parent quoted),
+    * matching the cleaning yaml_get applies to its search prefix
+    local parent = subinstr(`"`parent'"', `"""', "", .)
+    local parent = strtrim(`"`parent'"')
+
     local filter_parent = 0
     if ("`parent'" != "") {
         local filter_parent = 1
-        
-        * Clean parent key
+
+        * Clean parent key (colons are path separators: variables:male ==
+        * variables_male, matching yaml get colon syntax)
+        local parent = subinstr("`parent'", ":", "_", .)
         local parent = subinstr("`parent'", "-", "_", .)
         local parent = subinstr("`parent'", " ", "_", .)
         local parent = subinstr("`parent'", ".", "_", .)
@@ -91,19 +116,20 @@ program define _yaml_list_impl, rclass
     local key_list ""
     local val_list ""
     local n = _N
+    local n_found = 0
     local header_shown = 0
 
     forvalues i = 1/`n' {
         local k = key[`i']
         local v = value[`i']
         local p = ""
-        
+
         * Get parent if variable exists
         capture confirm variable parent
         if (_rc == 0) {
             local p = parent[`i']
         }
-        
+
         * Skip if filtering and this key is not a child
         if (`filter_parent') {
             if ("`children'" != "") {
@@ -115,12 +141,23 @@ program define _yaml_list_impl, rclass
                 if (strpos("`k'", "`parent'") != 1) continue
             }
         }
-        
+
         * If this is the parent key itself, skip unless children not requested
         if ("`children'" != "") {
             if ("`k'" == "`parent'") continue
         }
-        
+
+        * With -children-, return bare child names: strip the parent prefix
+        * (v1.3.x behavior; the full flattened key stays available via parent)
+        if (`filter_parent' & "`children'" != "") {
+            local plen = length("`parent'")
+            if (substr("`k'", 1, `plen') == "`parent'" & substr("`k'", `plen' + 1, 1) == "_") {
+                local k = substr("`k'", `plen' + 2, .)
+            }
+        }
+
+        local ++n_found
+
         * Add to list
         if ("`keys'" != "") {
             if ("`stata'" != "") {
@@ -141,7 +178,7 @@ program define _yaml_list_impl, rclass
             }
         }
         
-        * Display row
+        * Display row (-noheader- suppresses all printed output)
         if (`show_header') {
             if (`header_shown' == 0) {
                 local header_shown = 1
@@ -165,19 +202,8 @@ program define _yaml_list_impl, rclass
                 di as text "`v'"
             }
         }
-        else {
-            if ("`keys'" != "" & "`values'" != "") {
-                di as text "`k'" _col(35) "`v'"
-            }
-            else if ("`keys'" != "") {
-                di as text "`k'"
-            }
-            else if ("`values'" != "") {
-                di as text "`v'"
-            }
-        }
     }
-    
+
     * Trim lists
     if ("`keys'" != "") {
         local key_list = strtrim("`key_list'")
@@ -187,8 +213,10 @@ program define _yaml_list_impl, rclass
         local val_list = strtrim("`val_list'")
         return local values `"`val_list'"'
     }
-    
+
     if ("`parent'" != "") {
         return local parent "`parent'"
     }
+
+    return scalar found = (`n_found' > 0)
 end

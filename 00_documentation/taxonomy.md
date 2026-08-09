@@ -12,8 +12,62 @@ convention.
 | raw staging | `RAWDATA` / `${rawdata}` | downloads as received (INEP, IBGE FTP) | `F:/data` |
 | **curated archive** | **`DATALIB_ROOT` / `${datalib}`** | the organized IHSN library | `F:/datalib` |
 
-Every tool resolves the archive root from `DATALIB_ROOT` (or an explicit
-`root=`/`path()` argument). Nothing is hardcoded.
+Nothing is hardcoded. Every tool resolves the archive root through the same
+ordered chain, and the first non-empty candidate wins:
+
+| # | Stage | Stata | R | Python |
+|---|---|---|---|---|
+| 1 | `argument` | `root()` | `root =` | `root=` |
+| 2 | `global` | `${datalib}` | — | — |
+| 3 | `env` | `DATALIB_ROOT` | `DATALIB_ROOT` | `DATALIB_ROOT` |
+| 4 | `option` | — | `options(datalib.root=)` | — |
+| 5 | `config_generic` | `~/.config/user_config.yml` | same | same |
+| 6 | `config_package` | `~/.config/datalib_config.yml` | same | same |
+
+**Resolution never touches the disk.** A candidate is selected, not verified.
+This matters more than it looks: an archive that is momentarily unreachable — a
+VPN down, a drive unmapped, a typo in the config — comes back as the path *you*
+configured and fails when a file is actually opened. It is never replaced by
+some other library whose numbers would not reconcile with yesterday's.
+
+The two configuration files are read **block by block and never merged**: the
+root comes from the first file whose block for your username carries a
+non-empty `datalib:` key. A generic file that exists but has no such key falls
+through to the package file — key presence decides, not file presence. The
+resolver reports which stage supplied the root (`r(source_stage)` in Stata,
+`report = TRUE` in R and Python), and the stage names above are byte-identical
+in all three languages.
+
+**Writing the file.** Resolution reads; it never writes. Authoring the file is a
+separate, opt-in act, and only the Stata leg offers it: `getuserconfig, create`
+writes `user_config.yml` when it is absent and appends your block when that is
+what is missing, and `getuserconfig, edit` opens the file the reader would use.
+Both are additive — neither ever rewrites a block that already exists, so a
+second run cannot move a root that pipelines depend on. With no `root()`, the
+`datalib:` key is written commented out rather than filled with a placeholder:
+a path nobody chose would resolve happily and fail much later, at a `use`, as a
+missing file rather than as missing configuration. The R and Python legs read
+the same two files but leave authoring them alone, so anything they consume was
+written deliberately by a person or by the Stata command.
+
+Isolation hooks, for tests and for scripts that must not read a real home:
+`DATALIB_CONFIG` pins exactly one file (fallback off); `DATALIB_CONFIG_DIR`
+moves the search elsewhere (fallback preserved). Stata additionally accepts
+`config()` and `configdir()` options, because Stata cannot set an environment
+variable in its own session.
+
+**Discovery.** When *nothing at all* is configured, the Stata leg may search for
+a library near the working directory or in your home (stage `discovered`), and
+fall back to a demo library you have built (stage `demo`). Discovery is
+deliberately narrower than resolution: it is refused in batch runs, it never
+fills `${datalib}`, and it announces itself. A configured root is never
+replaced by it.
+
+**Two homes, deliberately not unified.** `~/.config` holds operator
+*configuration*, shared with sibling tools. `~/.datalib` holds datalib's own
+*state* — the catalog registry cache, credentials, the audit log. They serve
+different purposes and have different lifetimes; merging them would put
+credentials in a file people share.
 
 ## Folder template
 

@@ -1,6 +1,6 @@
 *******************************************************************************
 * yaml
-*! v 1.9.2   22Feb2026               by Joao Pedro Azevedo (UNICEF)
+*! v 2.0.0   06Jul2026               by Joao Pedro Azevedo (UNICEF)
 * Read and write YAML files in Stata
 * v1.9.2: Fix list-item quote stripping, sibling parent_stack contamination
 * v1.9.0: INDICATORS preset for wbopendata/unicefdata parsing

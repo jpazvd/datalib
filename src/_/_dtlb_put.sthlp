@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 0.1  datalib / UNICEF}{...}
+{* *! version 1.6.0  datalib}{...}
 {title:Title}
 
 {p 4 8}{bf:_dtlb_put} {hline 2} Deposit a dataset into the datalib archive (IHSN-compliant){p_end}
@@ -60,11 +60,18 @@ never mixed with the master.{p_end}
 {p 4 8}{cmd:r(violations)} conformance violations after deposit (0 = pass){p_end}
 
 
+
+{title:Read-only libraries}
+
+{pstd}This command refuses to write into a library whose {cmd:.datalib} marker file carries {cmd:readonly: 1}, and exits with error 198 naming the path. The check reads the marker, walking up from the target, rather than comparing path strings -- so it still holds for a copy of the tree, and cannot be defeated by 8.3 short names, junctions, UNC-versus-mapped spellings or case.{p_end}
+
+{pstd}A library built by {helpb datalib_makelib} is marked synthetic ({cmd:demo: true}) but is {it:not} read-only: it is your copy, in your directory, and depositing into it is the point. Read-only is opt-in, for a shared fixture or reference tree you want protected.{p_end}
+
 {title:Examples}
 
-{p 8 8}{cmd:. _dtlb_put, country(BRA) year(2023) survey(SAEB)}{p_end}
-{p 8 8}{cmd:. _dtlb_put, country(BRA) year(2023) survey(SAEB) collection(GMD) module(adult)}{p_end}
-{p 8 8}{cmd:. _dtlb_put using rawfile.dta, country(BRA) year(2023) survey(SAEB) original(raw.zip)}{p_end}
+{p 8 8}{cmd:. _dtlb_put, country(XAA) year(2023) survey(SAEB)}{p_end}
+{p 8 8}{cmd:. _dtlb_put, country(XAA) year(2023) survey(SAEB) collection(HCL) module(adult)}{p_end}
+{p 8 8}{cmd:. _dtlb_put using rawfile.dta, country(XAA) year(2023) survey(SAEB) original(raw.zip)}{p_end}
 
 
 {title:Also see}

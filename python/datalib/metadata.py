@@ -31,7 +31,7 @@ def _version_dir_of(datapath):
     return os.path.dirname(os.path.dirname(os.path.dirname(datapath.replace("\\", "/"))))
 
 
-def write_metadata(datapath, producer="UNICEF datalib", title=None):
+def write_metadata(datapath, producer="datalib", title=None):
     datapath = datapath.replace("\\", "/")
     vdir = _version_dir_of(datapath)
     info = parse_id(os.path.basename(vdir))

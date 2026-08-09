@@ -5,6 +5,7 @@
 *
 * Note: Stata's built-in `mkdir' is unaffected by this file because Stata
 * prefers built-ins over ado-files.
+*! v1.1.0
 *******************************************************
 
 capture program drop _mkdir

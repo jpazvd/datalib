@@ -1,7 +1,8 @@
 *******************************************************
 ** ibge: import PNAD and PNADC files into datalib
 * Author: Joao Pedro Azevedo
-*! Version: 3.0.0       Date: <2024-08-22>
+* Co-author: Minh Cong Nguyen (World Bank)
+*! Version: 3.0.1       Date: <2024-08-22>
 ** Description:
 * This program is designed to facilitate the process to import
 * PNAD and PNADC files into the datalib repository.
