@@ -1,6 +1,6 @@
 {smcl}
 {hline}
-{help datalib}{right:Version 1.6.1}
+{help datalib}{right:Version 1.6.4}
 {cmd:help _svycheck}{right:Author: Joao Pedro Azevedo}
 {right:Date: 2024-08-18}
 {hline}
@@ -47,28 +47,28 @@
 
 {title:Examples}
 {p 6 16 2}Lists all unique surveys found in the {cmd:D:\datalib\} directory. Returns an error if folder does not contain survey names.{p_end}
-{p 8 12}{stata "_svycheck , path(D:\datalib\)" :. _svycheck , path(D:\datalib\)}{p_end}
+{p 8 12}{stata "_dtlb_svycheck , path(D:\datalib\)" :. _svycheck , path(D:\datalib\)}{p_end}
 
 {p 6 16 2}Lists all unique surveys found in the {cmd:D:\datalib\BRA\} directory.{p_end}
-{p 8 12}{stata "_svycheck , path(D:\\datalib\\BRA\)" :. _svycheck , path(D:\datalib\BRA\)}{p_end}
+{p 8 12}{stata "_dtlb_svycheck , path(D:\\datalib\\BRA\)" :. _svycheck , path(D:\datalib\BRA\)}{p_end}
 
 {p 6 16 2}Lists unique master surveys found in the {cmd:D:\datalib\KEN} directory.{p_end}
-{p 8 12}{stata "_svycheck , path(D:\datalib\KEN) master" :. _svycheck , path(D:\datalib\KEN) master}{p_end}
+{p 8 12}{stata "_dtlb_svycheck , path(D:\datalib\KEN) master" :. _svycheck , path(D:\datalib\KEN) master}{p_end}
 
 {p 6 16 2}Lists unique adaptation surveys found in the {cmd:D:\datalib\MDG} directory.{p_end}
-{p 8 12}{stata "_svycheck , path(D:\datalib\MDG) adaptation" :. _svycheck , path(D:\datalib\MDG) adaptation}{p_end}
+{p 8 12}{stata "_dtlb_svycheck , path(D:\datalib\MDG) adaptation" :. _svycheck , path(D:\datalib\MDG) adaptation}{p_end}
 
 {p 6 16 2}Lists all unique surveys found in the {cmd:D:\datalib\BRA\BRA_2012_PNADC} directory.{p_end}
-{p 8 12}{stata "_svycheck , path(D:\datalib\BRA\BRA_2012_PNADC)" :. _svycheck , path(D:\datalib\BRA\BRA_2012_PNADC")}{p_end}
+{p 8 12}{stata "_dtlb_svycheck , path(D:\datalib\BRA\BRA_2012_PNADC)" :. _svycheck , path(D:\datalib\BRA\BRA_2012_PNADC")}{p_end}
 
 {p 6 16 2}Checks the surveys available for a specific survey name in the {cmd:BRA} directory.{p_end}
-{p 8 12}{stata "_svycheck , path(D:\datalib\BRA\) country(BRA) survey(PNADC)" :. _svycheck , path(D:\datalib\BRA\) country(BRA) survey(PNADC)}{p_end}
+{p 8 12}{stata "_dtlb_svycheck , path(D:\datalib\BRA\) country(XAA) survey(XHS)" :. _svycheck , path(D:\datalib\BRA\) country(XAA) survey(XHS)}{p_end}
 
 {p 6 16 2}Lists all surveys found in the {cmd:D:\datalib\BRA\BRA_1981_PNAD} directory.{p_end}
-{p 8 12}{stata "_svycheck , path(D:\datalib\BRA\bra_1981_pnad\)" :. _svycheck , path(D:\datalib\BRA\bra_1981_pnad\")}{p_end}
+{p 8 12}{stata "_dtlb_svycheck , path(D:\datalib\BRA\bra_1981_pnad\)" :. _svycheck , path(D:\datalib\BRA\bra_1981_pnad\")}{p_end}
 
 {p 6 16 2}Lists all surveys found in the {cmd:D:\datalib\BRA\BRA_2001_PNAD} directory.{p_end}
-{p 8 12}{stata "_svycheck , path(D:\datalib\BRA\bra_2001_pnad\)" :. _svycheck , path(D:\datalib\BRA\bra_2001_pnad\")}{p_end}
+{p 8 12}{stata "_dtlb_svycheck , path(D:\datalib\BRA\bra_2001_pnad\)" :. _svycheck , path(D:\datalib\BRA\bra_2001_pnad\")}{p_end}
 
 {title:Saved Results}
 {pstd}{cmd:_svycheck} saves the following in {cmd:r()}:{p_end}
@@ -90,11 +90,12 @@
 {synopt:{cmd:r(adaptationcheck)}}Flag indicating if adaptation files are found{p_end}
 {synoptline}
 
-{title:Author}
-{p 4 4 2}Joao Pedro Azevedo (jpazevedo@unicef.org){p_end}
+{title:Authors}
+{p 4 4 2}Joao Pedro Azevedo, UNICEF (jpazevedo@unicef.org){p_end}
+{p 4 4 2}Minh Cong Nguyen, World Bank{p_end}
 
 {title:Version}
-{p 4 4 2}1.6.1{p_end}
+{p 4 4 2}1.6.3{p_end}
 
 {title:Date}
 {p 4 4 2}2024-08-18{p_end}
@@ -102,5 +103,5 @@
 {title:Also see}
 
 {psee}
-Suplementary functions: {helpb datalib} {helpb _dlw} {helpb _mkdir} {helpb _ctrycheck} {helpb _svycheck} {helpb _vcheck} {helpb _adaptcheck}
+Supplementary functions: {helpb datalib} {helpb _dtlb_load} {helpb _dtlb_mkdir} {helpb _dtlb_ctrycheck} {helpb _dtlb_svycheck} {helpb _dtlb_vcheck} {helpb _dtlb_adaptcheck}
 {p_end}

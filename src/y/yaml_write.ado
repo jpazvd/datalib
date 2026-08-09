@@ -1,7 +1,13 @@
 *******************************************************************************
 * yaml_write
-*! v 1.5.1   18Feb2026               by Joao Pedro Azevedo (UNICEF)
+*! v 2.0.0   06Jul2026               by Joao Pedro Azevedo (UNICEF)
 * Write Stata data to YAML file
+* v 2.0.0: (1) emit sequences of mappings: a type=="list_map" row prints as a
+*   dash item, with its first child folded onto the dash line and remaining
+*   children indented beneath it, so map lists round-trip to dash form;
+*   (2) literal fidelity: boolean rows are written as true/false (not 1/0)
+*   and null rows as an empty value, so a read-write cycle preserves YAML
+*   literals rather than Stata's normalized storage values.
 *******************************************************************************
 
 program define yaml_write
@@ -90,6 +96,13 @@ program define _yaml_write_impl
     capture confirm variable parent
     local has_parent = (_rc == 0)
 
+    * Pending sequence-of-mappings item: when a list_map row is seen, the
+    * dash is held back so the item's FIRST child can be folded onto it
+    * ("- from: 1"); remaining children print at their own indentation.
+    local dash_pending = 0
+    local dash_key ""
+    local dash_spaces ""
+
     * Write rows in observation order (do NOT sort -- insertion order = file order)
     local n = _N
     forvalues i = 1/`n' {
@@ -118,14 +131,47 @@ program define _yaml_write_impl
             }
         }
 
-        if ("`t'" == "parent") {
+        * Literal fidelity: booleans back to true/false, null to empty
+        if ("`t'" == "boolean") {
+            if ("`v'" == "1") local v "true"
+            else if ("`v'" == "0") local v "false"
+        }
+        else if ("`t'" == "null") {
+            local v ""
+        }
+
+        * Flush a pending dash whose item turned out to have no children
+        if (`dash_pending' & "`p'" != "`dash_key'") {
+            file write `fh' "`dash_spaces'-" _n
+            local dash_pending = 0
+        }
+
+        if ("`t'" == "list_map") {
+            local dash_pending = 1
+            local dash_key "`k'"
+            local dash_spaces "`spaces'"
+        }
+        else if (`dash_pending' & "`p'" == "`dash_key'") {
+            * First child of the pending item: fold onto the dash line
+            file write `fh' `"`dash_spaces'- `leaf': `v'"' _n
+            local dash_pending = 0
+        }
+        else if ("`t'" == "parent") {
             file write `fh' "`spaces'`leaf':" _n
         }
         else if ("`t'" == "list_item") {
             file write `fh' `"`spaces'- `v'"' _n
         }
+        else if ("`t'" == "null") {
+            file write `fh' "`spaces'`leaf':" _n
+        }
         else {
             file write `fh' `"`spaces'`leaf': `v'"' _n
         }
+    }
+
+    * Trailing childless dash item
+    if (`dash_pending') {
+        file write `fh' "`dash_spaces'-" _n
     }
 end

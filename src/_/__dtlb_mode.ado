@@ -1,6 +1,7 @@
 *******************************************************
 * __dtlb_mode: return the mode of a numeric variable in r(mode).
 * Private to the datalib package.
+*! v1.1.0
 *******************************************************
 capture program drop __dtlb_mode
 program define __dtlb_mode, rclass

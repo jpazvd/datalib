@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "datalib: survey microdata as a versioned asset"
+abstract: >-
+  A toolkit for building and querying an IHSN-organized archive of survey
+  microdata, in Stata, R and Python. It treats a survey vintage as a versioned
+  asset with a stable identifier, so an analysis can name the exact data it ran
+  on. In production at the World Bank and at UNICEF, and published as a worked
+  example for any institution standing up an archive of its own.
+type: software
+version: 1.7.0
+date-released: "2026-08-08"
+license: MIT
+repository-code: "https://github.com/jpazvd/datalib"
+keywords:
+  - survey microdata
+  - data archive
+  - IHSN
+  - reproducibility
+  - Stata
+  - R
+  - Python
+authors:
+  - family-names: Azevedo
+    given-names: Joao Pedro
+    affiliation: UNICEF
+    email: jpazevedo@unicef.org
+  - family-names: Nguyen
+    given-names: Minh Cong
+    affiliation: World Bank

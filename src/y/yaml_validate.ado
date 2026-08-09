@@ -1,7 +1,9 @@
 *******************************************************************************
 * yaml_validate
-*! v 1.5.1   18Feb2026               by Joao Pedro Azevedo (UNICEF)
+*! v 2.0.0   06Jul2026               by Joao Pedro Azevedo (UNICEF)
 * Validate YAML data
+* v 2.0.0: print a one-line pass summary on success (previously silent),
+*   so interactive use and logs confirm what was checked; quiet suppresses.
 *******************************************************************************
 
 program define yaml_validate, rclass
@@ -112,6 +114,13 @@ program define _yaml_validate_impl, rclass
         }
     }
     
+    * Success summary (silent success is unhelpful in logs and pipelines)
+    if (`valid' == 1 & "`quiet'" == "") {
+        local n_req : word count `required'
+        local n_typ : word count `types'
+        di as text "Validation passed (`n_req' required keys, `n_typ' type checks)"
+    }
+
     * Return results
     return scalar valid = `valid'
     return scalar n_errors = `n_errors'

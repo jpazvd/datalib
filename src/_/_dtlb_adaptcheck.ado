@@ -1,7 +1,8 @@
 *******************************************************
 ** _dtlb_adaptcheck.ado 
 * Author: Joao Pedro Azevedo
-*! Version: 1.0       Date: <2024-08-15>
+* Co-author: Minh Cong Nguyen (World Bank)
+*! Version:v1.1.0       Date: <2024-08-15>
 ** Description: 
 * This program checks the surveys archived in the datalib 
 * repository. It extracts unique adaptation names based on the 
@@ -31,11 +32,14 @@ program define _dtlb_adaptcheck, rclass
     local adaptcount = 0
 
     foreach folder in `list' {
+        * Normalize folder to lower() so matching works on case-sensitive filesystems.
+        local lfolder = lower("`folder'")
+
         * Check if the folder matches the pattern for an adaptation
-        if strpos("`folder'", "_a_") {
+        if strpos("`lfolder'", "_a_") {
             * Extract the adaptation name
-            local adaptationname = substr("`folder'", strpos("`folder'", "_a_") + 3, .)
-            local adaptationname = upper(word("`adaptationname'", 1))
+            local adaptationname = substr("`lfolder'", strpos("`lfolder'", "_a_") + 3, .)
+            local adaptationname = upper(word(subinstr("`adaptationname'", "_", " ", .), 1))
             local adaptations "`adaptations' `adaptationname'"
             local adaptcount = `adaptcount' + 1
         }

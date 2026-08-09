@@ -2,6 +2,7 @@
 * _adaptcheck: deprecation stub (renamed to _dtlb_adaptcheck in v1.0)
 * Forwards to _dtlb_adaptcheck with a one-time per-session warning.
 * Will be removed in v2.0.
+*! v1.1.0
 *******************************************************
 
 capture program drop _adaptcheck

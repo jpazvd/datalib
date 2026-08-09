@@ -1,7 +1,8 @@
 *******************************************************
 ** _dtlb_svycheck: Datalib Survey Check Utility
 * Author: Joao Pedro Azevedo
-*! Version: 1.7.1       Date: 2024-08-18       
+* Co-author: Minh Cong Nguyen (World Bank)
+*! Version: 1.7.2       Date: 2024-08-18       
 ** Description: 
 * This program checks the surveys archived in the datalib 
 * repository. It extracts unique survey names based on the 
@@ -46,20 +47,24 @@ program define _dtlb_svycheck, rclass
     if (_rc==0) {
 
         foreach folder in `list' {
+            * Normalize folder to lower case so _m / _a_ matches work on
+            * case-sensitive filesystems (macOS, Linux).
+            local lfolder = lower("`folder'")
+
             * Extract survey name, year, and vintage
-            local components = wordcount(subinstr("`folder'", "_", " ", .))
-            local svytmp = word(subinstr("`folder'", "_", " ", .), 3)
-            local yeartmp = word(subinstr("`folder'", "_", " ", .), 2)
-            local vintagetmp_m = word(subinstr("`folder'", "_", " ", .), 4)  // For master
-            local vintagetmp_a = word(subinstr("`folder'", "_", " ", .), 6)  // For adaptation
-            local adapttmp_a = word(subinstr("`folder'", "_", " ", .), 8)    // For adaptation
+            local components = wordcount(subinstr("`lfolder'", "_", " ", .))
+            local svytmp = word(subinstr("`lfolder'", "_", " ", .), 3)
+            local yeartmp = word(subinstr("`lfolder'", "_", " ", .), 2)
+            local vintagetmp_m = word(subinstr("`lfolder'", "_", " ", .), 4)  // For master
+            local vintagetmp_a = word(subinstr("`lfolder'", "_", " ", .), 6)  // For adaptation
+            local adapttmp_a = word(subinstr("`lfolder'", "_", " ", .), 8)    // For adaptation
 
             * Skip if the year or survey doesn't match the specified year/survey
             if ("`year'" != "" & "`yeartmp'" != "`year'") continue
-            if ("`survey'" != "" & lower("`svytmp'") != lower("`survey'")) continue
+            if ("`survey'" != "" & "`svytmp'" != lower("`survey'")) continue
 
             * Process master files, extract master vintage
-            if (`components' == 5 & strpos("`folder'", "_m") > 0) {
+            if (`components' == 5 & strpos("`lfolder'", "_m") > 0) {
                 local svylist_M "`svylist_M' `svytmp'"
                 local mastervintages "`mastervintages' `vintagetmp_m'"
                 local mastercheck 1
@@ -67,18 +72,18 @@ program define _dtlb_svycheck, rclass
             }
 
             * Process adaptation files, extract both master and adaptation vintages
-            if (`components' == 8 & strpos("`folder'", "_m_") > 0) {
+            if (`components' == 8 & strpos("`lfolder'", "_m_") > 0) {
                 local svylist_M "`svylist_M' `svytmp'"
                 local masteradaptvintages "`masteradaptvintages' `vintagetmp_m'"
                 local masteradaptcheck 1
             }
-            if (`components' == 8 & strpos("`folder'", "_a_") > 0)  {
+            if (`components' == 8 & strpos("`lfolder'", "_a_") > 0)  {
                 local svylist_A "`svylist_A' `svytmp'"
                 local adaptationvintages "`adaptationvintages' `vintagetmp_a'"
                 local adaptationcheck 1
                 local adaptlist "`adaptlist' `adapttmp_a'"
             }
-            if (`components' == 8 & strpos("`folder'", "_m_") > 0 & strpos("`folder'", "_a_") > 0)  {
+            if (`components' == 8 & strpos("`lfolder'", "_m_") > 0 & strpos("`lfolder'", "_a_") > 0)  {
                 local vintagetmp_ma "`vintagetmp_m'`vintagetmp_a' "
                 local mavintage "`mavintage' `vintagetmp_ma'"
                 local masteradaptationfiles "`masteradaptationfiles' `folder'"

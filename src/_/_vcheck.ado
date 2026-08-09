@@ -2,6 +2,7 @@
 * _vcheck: deprecation stub (renamed to _dtlb_vcheck in v1.0)
 * Forwards to _dtlb_vcheck with a one-time per-session warning.
 * Will be removed in v2.0.
+*! v1.1.0
 *******************************************************
 
 capture program drop _vcheck

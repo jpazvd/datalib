@@ -1,3 +1,4 @@
+*! v1.1.0
 *******************************************************
 * __dtlb_move_and_clean: copy every file from srcdir to dstdir; if
 * `clean` is set, also remove the source files and (now empty)

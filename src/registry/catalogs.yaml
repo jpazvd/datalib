@@ -1,0 +1,40 @@
+# =============================================================================
+# catalogs.yaml — datalib multi-catalog registry (bundled offline fallback)
+# -----------------------------------------------------------------------------
+# Maps a catalog short name to the NADA REST deployment it identifies.
+# Read by _dtlb_catalogregistry, which resolves in this order:
+#   1. <home>/.datalib/catalogs.yaml          (user override)
+#   2. <home>/.datalib/cache/catalogs.yaml    (cached canonical, <= 24h old)
+#   3. https://jpazvd.github.io/datalib-dev/catalogs.yaml  (canonical; cached)
+#   4. this file                              (bundled offline fallback)
+#
+# The canonical copy lives at docs/catalogs.yaml in the repository and is
+# served via GitHub Pages, so an upstream URL change is a YAML edit on main,
+# not a package release. Keep this fallback byte-identical to the canonical
+# file at release time.
+#
+# Fields per catalog:
+#   name          display name
+#   base_url      NADA API base (no trailing slash)
+#   api_version   expected NADA API version (probe warns on mismatch)
+#   auth_type     x-api-key | bearer | none
+#   default       true on at most one entry (used when catalog() is omitted)
+#   metadata_only true when the catalog serves metadata but data downloads
+#                 redirect to producer sites (e.g., the IHSN central catalog)
+# =============================================================================
+
+wb:
+  name: World Bank Microdata Library
+  base_url: https://microdata.worldbank.org/index.php/api
+  api_version: v2
+  auth_type: x-api-key
+  default: true
+  metadata_only: false
+
+ihsn:
+  name: IHSN Central Catalog
+  base_url: https://catalog.ihsn.org/index.php/api
+  api_version: v2
+  auth_type: none
+  default: false
+  metadata_only: true

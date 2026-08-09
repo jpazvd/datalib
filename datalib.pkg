@@ -1,31 +1,65 @@
 v 3
-d datalib. Access the UNICEF Microdata Library (IHSN-organized survey archive)
+d datalib. Survey microdata as a versioned asset (IHSN-organized archive)
+d Version 1.7.0
 d
 d Commands to read (datalib), deposit (_dtlb_put) and validate (_dtlb_check)
 d survey microdata organized in the datalib / IHSN folder taxonomy, plus the
 d IBGE import pipeline (ibge) and a vendored YAML parser used by the registry.
+d
+d Modules declare their own structure -- unit of observation, keys and parent --
+d in module_schema: in datalib.yaml, mirrored into dataset characteristics, so
+d a multi-module load is planned from the data rather than from a hardcoded
+d table (_dtlb_modspec, _dtlb_mergeplan). datalib_whence reports the provenance
+d a dataset carries about itself.
 d See 00_documentation/taxonomy.md for the shared specification (the same
 d contract is implemented by the Python and R datalib packages).
 d
-d Requires: Stata 15+
+d Requires: Stata 16+ (the catalog uses frames; _dtlb_catalog,
+d _dtlb_catalogregistry and _dtlb_ipums_extract declare version 16)
 d
-d Author: Joao Pedro Azevedo (UNICEF)
+d NOTE ON DIRECTIVES: lowercase "f" installs only extensions Stata
+d recognises (.ado .sthlp .scheme .style); anything else -- .yaml
+d included -- is SILENTLY DROPPED while net install still returns 0.
+d Capital "F" ships the file regardless of extension. That is why
+d src/registry/catalogs.yaml below uses F. Same approach as
+d wbopendata.pkg, which ships its four _wbopendata_*.yaml with F.
+d
+d Authors: Joao Pedro Azevedo (UNICEF), Minh Cong Nguyen (World Bank)
 d Support: jpazevedo@unicef.org
 d
 f src/d/datalib.ado
 f src/d/datalib.sthlp
+f src/d/datalib_config.ado
+f src/d/datalib_config.sthlp
+f src/d/datalib_whence.ado
+f src/d/datalib_whence.sthlp
+f src/d/datalib_makelib.ado
+f src/d/datalib_makelib.sthlp
+f src/d/datalib_root.ado
+f src/d/datalib_root.sthlp
+f src/g/getuserconfig.ado
+f src/g/getuserconfig.sthlp
 f src/i/ibge.ado
 f src/i/ibge.sthlp
 f src/_/_dtlb_adaptcheck.ado
 f src/_/_dtlb_adaptcheck.sthlp
 f src/_/_dtlb_catalog.ado
+f src/_/_dtlb_catalog.sthlp
+f src/_/_dtlb_catalogregistry.ado
+f src/_/_dtlb_catalogregistry.sthlp
 f src/_/_dtlb_check.ado
 f src/_/_dtlb_check.sthlp
 f src/_/_dtlb_ctrycheck.ado
 f src/_/_dtlb_ctrycheck.sthlp
+f src/_/_dtlb_idno.ado
+f src/_/_dtlb_idno.sthlp
 f src/_/_dtlb_ipums_extract.ado
 f src/_/_dtlb_load.ado
 f src/_/_dtlb_load.sthlp
+f src/_/_dtlb_modspec.ado
+f src/_/_dtlb_modspec.sthlp
+f src/_/_dtlb_mergeplan.ado
+f src/_/_dtlb_mergeplan.sthlp
 f src/_/_dtlb_mkdir.ado
 f src/_/_dtlb_mkdir.sthlp
 f src/_/_dtlb_put.ado
@@ -34,16 +68,35 @@ f src/_/_dtlb_svycheck.ado
 f src/_/_dtlb_svycheck.sthlp
 f src/_/_dtlb_vcheck.ado
 f src/_/_dtlb_vcheck.sthlp
+f src/_/_dl_demo.ado
+f src/_/_dl_isdemo.ado
+f src/_/_dl_islib.ado
+f src/_/_dl_require_stage.ado
+f src/_/_foldernav.ado
+f src/_/_foldernav.sthlp
+f src/_/__dtlb_api_read.ado
+f src/_/__dtlb_api_read.sthlp
+f src/_/__dtlb_credential.ado
+f src/_/__dtlb_extensions_probe.ado
+f src/_/__dtlb_extensions_probe.sthlp
+f src/_/__dtlb_json.ado
 f src/_/__dtlb_mode.ado
 f src/_/__dtlb_move_and_clean.ado
 f src/_/__dtlb_rename.ado
 f src/_/__dtlb_rmdir.ado
+f src/_/__dtlb_userhome.ado
+f src/_/__dtlb_userhome.sthlp
+F src/registry/catalogs.yaml
 f src/_/_adaptcheck.ado
 f src/_/_ctrycheck.ado
 f src/_/_dlw.ado
 f src/_/_mkdir.ado
 f src/_/_svycheck.ado
 f src/_/_vcheck.ado
+f src/y/_yaml_collapse.ado
+f src/y/_yaml_fastread.ado
+f src/y/_yaml_mataread.ado
+f src/y/_yaml_tokenize_line.ado
 f src/y/yaml.ado
 f src/y/yaml.sthlp
 f src/y/yaml_clear.ado

@@ -5,6 +5,7 @@
 * On failure the program exits with the _rc returned by copy, so callers
 * can detect and stop rather than continuing as if the rename had
 * succeeded.
+*! v1.1.0
 *******************************************************
 capture program drop __dtlb_rename
 program define __dtlb_rename

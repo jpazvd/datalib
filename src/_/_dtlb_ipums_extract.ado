@@ -1,6 +1,7 @@
 *******************************************************************************
 * _dtlb_ipums_extract
-*! v 0.1.0  28Apr2026                by Joao Pedro Azevedo (UNICEF)
+*! v1.1.0  28Apr2026                by Joao Pedro Azevedo (UNICEF)
+*!                                  and Minh Cong Nguyen (World Bank)
 * Submit and download an IPUMS-International extract via the IPUMS API.
 *
 * Status: SKELETON / DESIGN STUB. The submit-poll-download workflow is sketched

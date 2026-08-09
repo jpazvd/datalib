@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.9.2  22Feb2026}{...}
+{* *! version 2.0.0  06Jul2026}{...}
 {vieweralsosee "yaml" "help yaml"}{...}
 {vieweralsosee "yaml what's new" "help yaml_whatsnew"}{...}
 {viewerjumpto "Basic usage" "yaml_examples##basic"}{...}
@@ -12,7 +12,7 @@
 {viewerjumpto "Round-trip" "yaml_examples##roundtrip"}{...}
 {viewerjumpto "Real-world" "yaml_examples##realworld"}{...}
 {hline}
-{cmd:help yaml examples}{right:{bf:version 1.9.2}}
+{cmd:help yaml examples}{right:{bf:version 2.0.0}}
 {hline}
 
 {title:Title}
@@ -74,9 +74,9 @@
 {bf:Query from a specific frame:}{p_end}
 
 {phang2}{cmd:. yaml get database:host, frame(dev)}{p_end}
-{phang2}{cmd:. local dev_host = r(host)}{p_end}
+{phang2}{cmd:. local dev_host = r(value)}{p_end}
 {phang2}{cmd:. yaml get database:host, frame(prod)}{p_end}
-{phang2}{cmd:. local prod_host = r(host)}{p_end}
+{phang2}{cmd:. local prod_host = r(value)}{p_end}
 
 {pstd}
 {bf:Clean up frames:}{p_end}

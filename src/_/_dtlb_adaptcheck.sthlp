@@ -1,6 +1,6 @@
 {smcl}
 {hline}
-{help datalib}{right:Version 1.0.0}
+{help datalib}{right:Version 1.0.2}
 {cmd:help _adaptcheck}{right:Author: Joao Pedro Azevedo}
 {right:Date: 2024-08-18}
 {hline}
@@ -29,13 +29,13 @@
 
 {title:Examples}
 {p 6 16 2}Checks the availability of adaptation files for the 2012 PNADC survey in Brazil.{p_end}
-{p 8 12}{stata "_adaptcheck , path(D:\datalib\BRA\BRA_2012_PNADC)" : _adaptcheck , path(D:\datalib\BRA\BRA_2012_PNADC)"}{p_end}
+{p 8 12}{stata "_dtlb_adaptcheck , path(D:\datalib\BRA\BRA_2012_PNADC)" : _adaptcheck , path(D:\datalib\BRA\BRA_2012_PNADC)"}{p_end}
 
 {p 6 16 2}Checks the availability of adaptation files for the 2019 MICS survey in Bangladesh.{p_end}
-{p 8 12}{stata "_adaptcheck , path(D:\datalib\BGD\BGD_2019_MICS)" : _adaptcheck , path(D:\datalib\BGD\BGD_2019_MICS)"}{p_end}
+{p 8 12}{stata "_dtlb_adaptcheck , path(D:\datalib\BGD\BGD_2019_MICS)" : _adaptcheck , path(D:\datalib\BGD\BGD_2019_MICS)"}{p_end}
 
 {p 6 16 2}Checks the availability of adaptation files for the 2001 PNAD survey in Brazil.{p_end}
-{p 8 12}{stata "_adaptcheck , path(D:\datalib\BRA\BRA_2001_PNAD)" : _adaptcheck , path(D:\datalib\BRA\BRA_2001_PNAD)"}{p_end}
+{p 8 12}{stata "_dtlb_adaptcheck , path(D:\datalib\BRA\BRA_2001_PNAD)" : _adaptcheck , path(D:\datalib\BRA\BRA_2001_PNAD)"}{p_end}
 
 {title:Saved Results}
 {pstd}{cmd:_adaptcheck} saves the following in {cmd:r()}:{p_end}
@@ -50,11 +50,12 @@
 {synopt:{cmd:r(AFolders)}}List of folders containing adaptation data.{p_end}
 {synoptline}
 
-{title:Author}
-{p 4 4 2}Joao Pedro Azevedo (jpazevedo@unicef.org){p_end}
+{title:Authors}
+{p 4 4 2}Joao Pedro Azevedo, UNICEF (jpazevedo@unicef.org){p_end}
+{p 4 4 2}Minh Cong Nguyen, World Bank{p_end}
 
 {title:Version}
-{p 4 4 2}1.0.0{p_end}
+{p 4 4 2}1.0.2{p_end}
 
 {title:Date}
 {p 4 4 2}2024-08-18{p_end}
@@ -65,5 +66,5 @@
 {title:Also see}
 
 {psee}
-Supplementary functions: {helpb datalib} {helpb _dlw} {helpb _mkdir} {helpb _ctrycheck} {helpb _svycheck} {helpb _vcheck} {helpb _adaptcheck}
+Supplementary functions: {helpb datalib} {helpb _dtlb_load} {helpb _dtlb_mkdir} {helpb _dtlb_ctrycheck} {helpb _dtlb_svycheck} {helpb _dtlb_vcheck} {helpb _dtlb_adaptcheck}
 {p_end}

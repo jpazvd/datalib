@@ -1,7 +1,7 @@
 *******************************************************
 * _dtlb_mkdir.ado 
 * Joao Pedro Azevedo
-*! v1.02       <20240817>       JPAzevedo
+*! v1.2.1       <20240817>       JPAzevedo
 *******************************************************
 
 capture program drop _dtlb_mkdir
@@ -148,9 +148,19 @@ program define _dtlb_mkdir, rclass
         local latest latest
     }
 
-    * Check if datalib path has been specified. If not, error break. 
+    * Check if datalib path has been specified. If not, error break.
     if ("${datalib}" == "") {
         noi di as err "Error: Path to datalib needs to be specified. Global datalib needs to be specified."
+        exit 198
+    }
+
+    * Refuse a library whose .datalib marker carries "readonly: 1". The check
+    * reads the marker rather than comparing paths, so it survives copies and
+    * path spellings; see the fuller note in _dtlb_put.ado.
+    capture _dl_isdemo `"${datalib}"'
+    if (_rc==0 & r(readonly)==1) {
+        noi di as err `"{p}Refusing to create a vintage inside a read-only library at: ${datalib}{p_end}"'
+        noi di as err `"{p}Its {bf:.datalib} marker carries {bf:readonly: 1}. Set your own archive with {bf:datalib_root, root(}{it:path}{bf:) set}.{p_end}"'
         exit 198
     }
 
@@ -566,7 +576,7 @@ program define _dtlb_mkdir, rclass
                             cap: mkdir "`path'/`ctry'/`ctry'_`yr'_`svy'/`ctry'_`yr'_`svy'_`vmstr'_M_`vastr'_A_`clct'/Data"
                             cap: mkdir "`path'/`ctry'/`ctry'_`yr'_`svy'/`ctry'_`yr'_`svy'_`vmstr'_M_`vastr'_A_`clct'/Data/Original"
                             cap: mkdir "`path'/`ctry'/`ctry'_`yr'_`svy'/`ctry'_`yr'_`svy'_`vmstr'_M_`vastr'_A_`clct'/Data/Stata"
-                            cap: mkdir "`path'/`ctry'/`ctry'_`yr'_`svy'/`ctry'_`yr'_`svy'_`vmstr'_A_`vastr'_A_`clct'/Data/Other"
+                            cap: mkdir "`path'/`ctry'/`ctry'_`yr'_`svy'/`ctry'_`yr'_`svy'_`vmstr'_M_`vastr'_A_`clct'/Data/Other"
                             cap: mkdir "`path'/`ctry'/`ctry'_`yr'_`svy'/`ctry'_`yr'_`svy'_`vmstr'_M_`vastr'_A_`clct'/Doc"
                             cap: mkdir "`path'/`ctry'/`ctry'_`yr'_`svy'/`ctry'_`yr'_`svy'_`vmstr'_M_`vastr'_A_`clct'/Programs"
                             noi di "`ctry'_`yr'_`svy'_`vmstr'_M_`vastr'_A_`clct' vintage created in datalib"

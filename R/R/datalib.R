@@ -7,11 +7,16 @@
 
 DATALIB_SKELETON <- c("Data/Original", "Data/Stata", "Data/Other", "Doc", "Programs")
 
+#' Library root, in this package's original return shape
+#'
+#' A thin wrapper over [datalib_root()], kept so existing callers are
+#' unaffected: it still returns a forward-slashed character scalar with no
+#' trailing separator, and still stops when nothing resolves. What it gains is
+#' the rest of the resolution order -- the configuration files -- which it
+#' previously could not see.
 dl_root <- function(root = NULL) {
-  if (is.null(root)) root <- Sys.getenv("DATALIB_ROOT", unset = "")
-  if (!nzchar(root))
-    stop("datalib root not set; pass root= or set DATALIB_ROOT (e.g. F:/datalib).")
-  sub("/+$", "", gsub("\\\\", "/", root))
+  resolved <- datalib_root(root)
+  sub("/+$", "", gsub("\\\\", "/", resolved))
 }
 
 dl_survey_id <- function(country, year, survey)

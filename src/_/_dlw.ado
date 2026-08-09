@@ -2,6 +2,7 @@
 * _dlw: deprecation stub (renamed to _dtlb_load in v1.0)
 * This file forwards calls to _dtlb_load and emits a one-time warning per
 * session. It will be removed in v2.0.
+*! v1.1.0
 *******************************************************
 
 capture program drop _dlw
