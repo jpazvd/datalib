@@ -1,7 +1,7 @@
 *******************************************************
 ** _dl_islib
 * Joao Pedro Azevedo
-*! v1.6.0
+*! v1.7.1
 *******************************************************
 * Normalise a path and decide whether it is a datalib LIBRARY (not merely an
 * existing directory). Used by datalib_root's -find- mode so that a missing
@@ -56,10 +56,78 @@ program define _dl_islib, rclass
         *
         * We cannot make the FIRST probe safe. We can stop it becoming the
         * tenth, and skip it entirely when the operator has said they are
-        * offline. Two guards, in that order.
-        local vol = ""
-        if (regexm(`"`p'"', "^([A-Za-z]):")) local vol = upper(regexs(1))
-        if (substr(`"`p'"',1,2)=="//")       local vol = "UNC"
+        * offline. Three guards, in that order.
+        *
+        * WHY THE SESSION MEMO IS NOT ENOUGH (2026-08-09)
+        * Guard (2) works, and a -set trace on- run proves it: with
+        * ${datalib} = Z:/datalib and the share disconnected, the FIRST
+        * candidate cost the full OS timeout and the remaining two were
+        * skipped by the memo. Measured end to end: t=366.90 -- six minutes
+        * and seven seconds for one -datalib- that then failed with a clear
+        * "No datalib library at: Z:/datalib".
+        *
+        * So the probe does return; it just returns slowly, and Stata cannot
+        * bound a filesystem call. What the session memo cannot do is remember
+        * anything, so EVERY new session pays those six minutes again -- which
+        * is what "still getting stuck" means in practice.
+        *
+        * Guard (0) therefore PERSISTS the finding, so a volume that failed
+        * once is skipped in every later session without being touched.
+        * Nothing here probes: it reads one small file in the user's home.
+        * The memo key. A drive letter is its own key; a UNC path is keyed by
+        * SERVER_SHARE, not by the bare word "UNC".
+        *
+        * Keying every UNC path alike meant one unreachable \\a\x marked every
+        * other UNC root dead, hiding a perfectly reachable \\b\y -- a
+        * pre-existing scoping bug that persisting the memo would have turned
+        * from a session annoyance into a durable one. Found in review.
+        *
+        * -isletter- is kept separately from -vol- because only a real drive
+        * letter may be handed to __dtlb_volstate: "UNC" would be truncated to
+        * "U" there and answer for an unrelated U: drive.
+        local vol      = ""
+        local isletter = 0
+        if (regexm(`"`p'"', "^([A-Za-z]):")) {
+            local vol      = upper(regexs(1))
+            local isletter = 1
+        }
+        else if (substr(`"`p'"',1,2)=="//") {
+            * //server/share/... -> UNC_SERVER_SHARE, with anything that is not
+            * A-Z, 0-9 or _ folded to _ so the result is a legal global name.
+            local unc = substr(`"`p'"', 3, .)
+            local sv  = upper(word(subinstr(`"`unc'"', "/", " ", .), 1))
+            local sh  = upper(word(subinstr(`"`unc'"', "/", " ", .), 2))
+            local key = "UNC_`sv'_`sh'"
+            local key = subinstr("`key'", "-", "_", .)
+            local key = subinstr("`key'", ".", "_", .)
+            local key = subinstr("`key'", " ", "_", .)
+            local vol = substr("`key'", 1, 30)
+        }
+
+        * (0) load the persisted dead-volume list, once per session
+        if ("${dtlb_deadmemo_loaded}"!="1") {
+            global dtlb_deadmemo_loaded 1
+            capture __dtlb_userhome
+            if (_rc==0) {
+                local dhome `"`r(datalib_home)'"'
+                local dhome = subinstr(`"`dhome'"', "\", "/", .)
+                global dtlb_deadmemo_file `"`dhome'/offline_volumes.txt"'
+                capture confirm file `"${dtlb_deadmemo_file}"'
+                if (_rc==0) {
+                    tempname mh
+                    file open `mh' using `"${dtlb_deadmemo_file}"', read text
+                    file read `mh' mline
+                    while (r(eof)==0) {
+                        local mv = strtrim(upper(`"`macval(mline)'"'))
+                        if (`"`mv'"'!="" & substr(`"`mv'"',1,1)!="*") {
+                            global dtlb_dead_`mv' = 1
+                        }
+                        file read `mh' mline
+                    }
+                    file close `mh'
+                }
+            }
+        }
 
         * (1) offline: skip network roots without touching them
         if ("`vol'"!="" & "`vol'"!="C" & "${datalib_offline}"=="1") {
@@ -67,6 +135,30 @@ program define _dl_islib, rclass
             return scalar exists = 0
             return scalar islib  = 0
             return scalar skipped_offline = 1
+            exit
+        }
+
+        * (1b) ASK THE OS FIRST. Windows already knows a mapped drive is
+        * disconnected and will say so in ~0.1s from local state, without
+        * touching the network -- while probing the same drive costs its full
+        * timeout (measured: t=366.90 for one -datalib-). One cheap question
+        * replaces a very expensive one.
+        *
+        * Asked once per volume per session, and only ever used to SKIP: a
+        * state this cannot classify returns "unknown" and we fall through to
+        * the probe exactly as before. Being wrong here must never make a
+        * reachable library invisible.
+        if (`isletter' & "`vol'"!="C" & "${dtlb_volstate_`vol'}"=="") {
+            capture __dtlb_volstate, volume("`vol'")
+            if (_rc==0) global dtlb_volstate_`vol' `"`r(state)'"'
+            else        global dtlb_volstate_`vol' "unknown"
+        }
+        if (`isletter' & "${dtlb_volstate_`vol'}"=="disconnected") {
+            noi di as text `"{p}note: drive {bf:`vol':} is mapped but disconnected, so {bf:`p'} was not read. The operating system reported this without contacting the share; probing it would have cost minutes.{p_end}"'
+            global dtlb_dead_`vol' = 1
+            return scalar exists = 0
+            return scalar islib  = 0
+            return scalar skipped_disconnected = 1
             exit
         }
 
@@ -87,7 +179,31 @@ program define _dl_islib, rclass
             * candidate, and each of those failures costs another OS timeout.
             if ("`vol'"!="" & "`vol'"!="C") {
                 global dtlb_dead_`vol' = 1
-                noi di as text `"{p}note: {bf:`vol':} did not respond. Further candidates on that volume are skipped for this session. If it is a network drive, connect it (or set {bf:global datalib_offline 1}) and restart.{p_end}"'
+
+                * Record it, so the next session does not pay this again. The
+                * probe above cost minutes; writing one line costs nothing,
+                * and it is the difference between "slow once" and "slow every
+                * time you open Stata".
+                local wrote 0
+                if (`"${dtlb_deadmemo_file}"'!="") {
+                    capture mkdir `"`=substr("${dtlb_deadmemo_file}", 1, strrpos("${dtlb_deadmemo_file}","/")-1)'"'
+                    tempname wh
+                    capture file open `wh' using `"${dtlb_deadmemo_file}"', write text append
+                    if (_rc==0) {
+                        file write `wh' "`vol'" _n
+                        file close `wh'
+                        global dtlb_dead_`vol' = 1
+                        local wrote 1
+                    }
+                }
+
+                noi di as text `"{p}note: {bf:`vol':} did not respond, after the operating system's own timeout. Further candidates on that volume are skipped.{p_end}"'
+                if (`wrote') {
+                    noi di as text `"{p}It is now recorded in {bf:${dtlb_deadmemo_file}}, so later sessions skip it without waiting. When the drive is back, run {bf:datalib_config, retryvolumes} to forget it.{p_end}"'
+                }
+                else {
+                    noi di as text `"{p}If it is a network drive, connect it (or set {bf:global datalib_offline 1}) and restart.{p_end}"'
+                }
             }
             return scalar exists = 0
             return scalar islib  = 0

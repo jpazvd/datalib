@@ -1,0 +1,96 @@
+# qa/fixtures/library -- MANIFEST
+#
+# The exact contents of the committed demo library, one path per line,
+# relative to this file's directory, sorted, CASE-SENSITIVE.
+#
+# This file is an executable spec, not documentation. It is compared against
+# `git ls-files` by python/tests/test_fixture_manifest.py, so a fixture that
+# drifts from what is documented here fails CI.
+#
+# WHY CASE IS CHECKED
+# Until v1.7.0 two naming conventions coexisted: datalib_makelib created
+# UPPER-case vintage folders while _dtlb_idno reported lower-case ones, and
+# the committed fixture was lower-case because Windows preserves the case a
+# path was first created with. Nothing caught it -- every Stata suite runs on
+# Windows, where the filesystem is case-insensitive, so both spellings
+# resolved. This check runs in pytest on Linux and compares strings from the
+# git index rather than the filesystem, so it is case-exact on any platform.
+#
+# THE CONVENTION
+#   directories   CCC/CCC_YYYY_SSSS/CCC_YYYY_SSSS_vNN_M[_vNN_A_HHHH]
+#                 upper throughout, except the vintage marker's "v"
+#   datasets      <vintage>_<module>.dta   -- upper stem, lower module token
+#   scripts       <vintage>_<module>.do    -- named after the file they write
+#
+# REGENERATE
+#   . datalib_makelib, path(qa/fixtures/library) families(demo)
+#   then re-run: python python/tests/test_fixture_manifest.py --write
+#
+# 8 vintages = 6 masters + 2 adaptations; 5 carry datalib.yaml.
+
+.datalib
+QMA/QMA_2014_XLF/QMA_2014_XLF_v01_M/Data/Original/raw_household.csv
+QMA/QMA_2014_XLF/QMA_2014_XLF_v01_M/Data/Original/raw_roster.csv
+QMA/QMA_2014_XLF/QMA_2014_XLF_v01_M/Data/Stata/QMA_2014_XLF_v01_M_household.dta
+QMA/QMA_2014_XLF/QMA_2014_XLF_v01_M/Data/Stata/QMA_2014_XLF_v01_M_roster.dta
+QMA/QMA_2014_XLF/QMA_2014_XLF_v01_M/Doc/README.md
+QMA/QMA_2014_XLF/QMA_2014_XLF_v01_M/Programs/QMA_2014_XLF_v01_M_household.do
+QMA/QMA_2014_XLF/QMA_2014_XLF_v01_M/Programs/QMA_2014_XLF_v01_M_roster.do
+QMA/QMA_2014_XLF/QMA_2014_XLF_v01_M/datalib.yaml
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M/Data/Original/raw_household.csv
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M/Data/Original/raw_roster.csv
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M/Data/Stata/XAA_2015_XHS_v01_M_household.dta
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M/Data/Stata/XAA_2015_XHS_v01_M_roster.dta
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M/Doc/README.md
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M/Programs/XAA_2015_XHS_v01_M_household.do
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M/Programs/XAA_2015_XHS_v01_M_roster.do
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M/datalib.yaml
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M_v01_A_HCL/Data/Original/.provenance
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M_v01_A_HCL/Data/Stata/XAA_2015_XHS_v01_M_v01_A_HCL_household.dta
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M_v01_A_HCL/Data/Stata/XAA_2015_XHS_v01_M_v01_A_HCL_roster.dta
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M_v01_A_HCL/Doc/README.md
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M_v01_A_HCL/Programs/XAA_2015_XHS_v01_M_v01_A_HCL_household.do
+XAA/XAA_2015_XHS/XAA_2015_XHS_v01_M_v01_A_HCL/Programs/XAA_2015_XHS_v01_M_v01_A_HCL_roster.do
+XAA/XAA_2015_XHS/XAA_2015_XHS_v02_M/Data/Original/raw_household.csv
+XAA/XAA_2015_XHS/XAA_2015_XHS_v02_M/Data/Original/raw_roster.csv
+XAA/XAA_2015_XHS/XAA_2015_XHS_v02_M/Data/Stata/XAA_2015_XHS_v02_M_household.dta
+XAA/XAA_2015_XHS/XAA_2015_XHS_v02_M/Data/Stata/XAA_2015_XHS_v02_M_roster.dta
+XAA/XAA_2015_XHS/XAA_2015_XHS_v02_M/Doc/README.md
+XAA/XAA_2015_XHS/XAA_2015_XHS_v02_M/Programs/XAA_2015_XHS_v02_M_household.do
+XAA/XAA_2015_XHS/XAA_2015_XHS_v02_M/Programs/XAA_2015_XHS_v02_M_roster.do
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Data/Original/raw_classroom.csv
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Data/Original/raw_school.csv
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Data/Original/raw_student.csv
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Data/Original/raw_teacher.csv
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Data/Stata/XAA_2021_XSA_v01_M_classroom.dta
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Data/Stata/XAA_2021_XSA_v01_M_school.dta
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Data/Stata/XAA_2021_XSA_v01_M_student.dta
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Data/Stata/XAA_2021_XSA_v01_M_teacher.dta
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Doc/README.md
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Programs/XAA_2021_XSA_v01_M_classroom.do
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Programs/XAA_2021_XSA_v01_M_school.do
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Programs/XAA_2021_XSA_v01_M_student.do
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/Programs/XAA_2021_XSA_v01_M_teacher.do
+XAA/XAA_2021_XSA/XAA_2021_XSA_v01_M/datalib.yaml
+XBB/XBB_2019_XHS/XBB_2019_XHS_v01_M/Data/Original/raw_household.csv
+XBB/XBB_2019_XHS/XBB_2019_XHS_v01_M/Data/Original/raw_roster.csv
+XBB/XBB_2019_XHS/XBB_2019_XHS_v01_M/Data/Stata/XBB_2019_XHS_v01_M_household.dta
+XBB/XBB_2019_XHS/XBB_2019_XHS_v01_M/Data/Stata/XBB_2019_XHS_v01_M_roster.dta
+XBB/XBB_2019_XHS/XBB_2019_XHS_v01_M/Doc/README.md
+XBB/XBB_2019_XHS/XBB_2019_XHS_v01_M/Programs/XBB_2019_XHS_v01_M_household.do
+XBB/XBB_2019_XHS/XBB_2019_XHS_v01_M/Programs/XBB_2019_XHS_v01_M_roster.do
+XBB/XBB_2019_XHS/XBB_2019_XHS_v01_M/datalib.yaml
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M/Data/Original/raw_household.csv
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M/Data/Original/raw_roster.csv
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M/Data/Stata/ZZA_2022_XHS_v01_M_household.dta
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M/Data/Stata/ZZA_2022_XHS_v01_M_roster.dta
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M/Doc/README.md
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M/Programs/ZZA_2022_XHS_v01_M_household.do
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M/Programs/ZZA_2022_XHS_v01_M_roster.do
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M/datalib.yaml
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M_v01_A_HCL/Data/Original/.provenance
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M_v01_A_HCL/Data/Stata/ZZA_2022_XHS_v01_M_v01_A_HCL_household.dta
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M_v01_A_HCL/Data/Stata/ZZA_2022_XHS_v01_M_v01_A_HCL_roster.dta
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M_v01_A_HCL/Doc/README.md
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M_v01_A_HCL/Programs/ZZA_2022_XHS_v01_M_v01_A_HCL_household.do
+ZZA/ZZA_2022_XHS/ZZA_2022_XHS_v01_M_v01_A_HCL/Programs/ZZA_2022_XHS_v01_M_v01_A_HCL_roster.do

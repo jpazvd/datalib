@@ -1,6 +1,6 @@
 v 3
 d datalib. Survey microdata as a versioned asset (IHSN-organized archive)
-d Version 1.7.0
+d Version 1.7.1
 d
 d Commands to read (datalib), deposit (_dtlb_put) and validate (_dtlb_check)
 d survey microdata organized in the datalib / IHSN folder taxonomy, plus the
@@ -85,6 +85,7 @@ f src/_/__dtlb_move_and_clean.ado
 f src/_/__dtlb_rename.ado
 f src/_/__dtlb_rmdir.ado
 f src/_/__dtlb_userhome.ado
+f src/_/__dtlb_volstate.ado
 f src/_/__dtlb_userhome.sthlp
 F src/registry/catalogs.yaml
 f src/_/_adaptcheck.ado

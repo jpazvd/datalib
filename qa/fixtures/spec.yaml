@@ -1,0 +1,47 @@
+# =============================================================================
+# qa/fixtures/spec.yaml — inventory of the NADA API fixture tree
+# -----------------------------------------------------------------------------
+# The files under qa/fixtures/api/ are the COMMITTED golden responses that
+# qa/run_smoke.do exercises through the file:// backend of __dtlb_api_read
+# (same code paths as the network, no network). They pin the response-shape
+# assumptions of the __dtlb_json extractor: flat objects inside arrays, no
+# escaped quotes in strings.
+#
+# Like the filesystem fixture in library/, these are committed and reviewed
+# like code. (They were once contrasted with a generated, gitignored
+# _tmp_datalib tree built by build.sh; both were retired -- see README.md in
+# this directory -- and nothing here is generated any more.) If this tree grows past a handful of files, revisit generation from
+# this spec (R-G in internal/datalib_nada_improvement_plan.md); NA-9
+# (release-time refresh.sh/diff.sh against live catalogs) is the planned
+# v1.5 mechanism for keeping them grounded in reality.
+#
+# Endpoint -> fixture mapping (file:// strips the query string; a missing
+# extensionless path is retried with .json appended):
+# =============================================================================
+
+fixtures:
+  - endpoint: GET /info
+    file: api/info
+    exercises: __dtlb_extensions_probe (datalib REST extensions detection)
+    notes: vanilla NADA hosts 404 here; that is the no-extensions branch
+
+  - endpoint: GET /catalog/search?ps=100&page=1&...
+    file: api/catalog/search.json
+    exercises: _dtlb_catalog, list catalog() — capped pagination (NA-5)
+    notes: >
+      found=250 with 3 rows deliberately exceeds one 100-row page so the
+      default fetch reports more_pages_available=1. Row 2 is an adaptation
+      idno; row 3 is a NON-conforming free-text idno pinning the
+      unparsed-row path (structural columns blank, year from year_start).
+
+  - endpoint: GET /catalog/find_by_idno/XAA_2015_XHS_v01_M
+    file: api/catalog/find_by_idno/XAA_2015_XHS_v01_M.json
+    exercises: __dtlb_api_read (200 + content-type detection)
+    notes: DDI-flavored survey metadata record; consumed by the future
+      scan-from-api path (D-3), fixed here as contract documentation
+
+  - endpoint: GET /catalog/data_files/XAA_2015_XHS_v01_M
+    file: api/catalog/data_files/XAA_2015_XHS_v01_M.json
+    exercises: _dtlb_catalog, files (NA-6 frame + r() macros)
+    notes: three files (Stata, CSV, PDF); sizes are numeric bytes and
+      total 55574528; the .dta row pins has_stata=1

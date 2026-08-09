@@ -2,7 +2,7 @@
 * datalib_root: library-root resolver
 * Author: Joao Pedro Azevedo
 * Co-author: Minh Cong Nguyen (World Bank)
-*! v1.2.0  2026-08-06
+*! v1.7.1  2026-08-06
 *******************************************************
 * Resolves the datalib library root. Two mechanisms, deliberately separate:
 *
@@ -206,6 +206,23 @@ program define datalib_root, rclass
 
             if (`"`badcand'"'!="") {
                 noi di as err `"{p}No datalib library at: `badcand'{p_end}"'
+
+                * WHY it failed, when the reason is "the drive is not
+                * connected". _dl_islib knows this, but says so with -noi di-
+                * inside its own -quietly-, which is itself inside THIS
+                * command's -quietly- -- so the note escapes one level and is
+                * swallowed by the second, and the user saw only "No datalib
+                * library at: Z:/datalib" after a six-minute wait. Reported
+                * here instead: once, attached to the failure, rather than
+                * once per candidate.
+                local badvol = ""
+                if (regexm(`"`badcand'"', "^([A-Za-z]):")) local badvol = upper(regexs(1))
+                if ("`badvol'"!="" & "${dtlb_volstate_`badvol'}"=="disconnected") {
+                    noi di as err `"{p}Drive {bf:`badvol':} is mapped but {bf:disconnected}, so it was never read. The operating system reported that from local state, without contacting the share.{p_end}"'
+                    noi di as err `"{p}Connect the drive, or point datalib somewhere else: {bf:datalib, library(}{it:path}{bf:)}.{p_end}"'
+                    exit 198
+                }
+
                 if (`badexists'==1) noi di as err `"{p}That directory exists but does not look like a library (no {bf:datalib} folder inside it, no country folders, no {bf:.datalib} marker).{p_end}"'
                 noi di as err `"{p}Name it for one call with {bf:datalib, library(}{it:path}{bf:)}, or for the session with {bf:datalib_root, root(}{it:path}{bf:) set}.{p_end}"'
                 exit 198
