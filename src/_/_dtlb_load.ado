@@ -2,7 +2,7 @@
 * _dtlb_load: Data Loading and Processing Utility (formerly _dlw)
 * Author: Joao Pedro Azevedo
 * Co-author: Minh Cong Nguyen (World Bank)
-*! Version: 1.6.0       Date: 2026-08-06       
+*! Version: 1.7.3       Date: 2026-08-06       
 * Description: 
 * This program is designed to facilitate the loading, processing, and 
 * merging of survey data modules across different countries and years. 
@@ -41,6 +41,41 @@ program define _dtlb_load, rclass
             ]
 
     quietly {
+
+        *---------------------------------------------------------------------
+        * The package version, read ONCE and FIRST.
+        *
+        * -findfile- is rclass: it sets r(fn) and in doing so CLEARS r().
+        * Read next to the char that consumes it -- which is what the first
+        * version of this did -- it wiped the merge-plan returns that
+        * _dtlb_mergeplan had just accumulated for -return add-, and DET-10i
+        * went red on r(mergeplan). So it happens here, before anything this
+        * program returns exists to be destroyed.
+        *
+        * Read rather than typed: the value was hardcoded "1.5.0" and stayed
+        * there through four releases, so datalib_whence reported a version
+        * that had not been current since 1.5.0. A provenance stamp that lies
+        * is worse than none.
+        *---------------------------------------------------------------------
+        local _dtlb_pkgver "unknown"
+        capture findfile datalib.ado
+        if (_rc==0) {
+            local _pvfile `"`r(fn)'"'
+            tempname _pvh
+            local _pvline ""
+            capture file open `_pvh' using `"`_pvfile'"', read text
+            if (_rc==0) {
+                file read `_pvh' _pvline
+                while (r(eof)==0) {
+                    if (regexm(`"`macval(_pvline)'"', "^\*! *v?([0-9]+\.[0-9]+\.[0-9]+)")) {
+                        local _dtlb_pkgver = regexs(1)
+                        continue, break
+                    }
+                    file read `_pvh' _pvline
+                }
+                file close `_pvh'
+            }
+        }
 
         /** 
         * Flow Control 
@@ -511,7 +546,19 @@ program define _dtlb_load, rclass
                 char _dta[datalib_idno]       "`file'"
                 char _dta[datalib_source]     "`vdir'"
                 char _dta[datalib_loaded]     "`c(current_date)' `c(current_time)'"
-                char _dta[datalib_pkgversion] "1.5.0"
+                * The version that actually loaded this dataset, read from
+                * the installed datalib.ado rather than typed. It was
+                * hardcoded "1.5.0" and stayed there through 1.6.0, 1.7.0,
+                * 1.7.1 and 1.7.2 -- so datalib_whence reported a version that
+                * had not been current for four releases. A provenance stamp
+                * that lies is worse than none: the whole point of this char
+                * is to answer "where did this come from".
+                *
+                * VERSION is not installed by the package, but datalib.ado is,
+                * and it carries the stamp the version guards keep pinned to
+                * VERSION. -findfile- rather than -which-, which does not
+                * reliably return the path in r(fn).
+                char _dta[datalib_pkgversion] "`_dtlb_pkgver'"
 
                 * -return add- rather than a hand-listed subset: the planner
                 * returns one rows_/distinct_ pair per module, and a list

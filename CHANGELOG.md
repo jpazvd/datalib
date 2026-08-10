@@ -6,6 +6,329 @@ Commit hashes in the 2026-07-04 entry reference the mirror repo (jpazvd/datalib,
 
 Entries are version-headed from v1.1.0 onwards; the date-headed entries below it are kept as they were written.
 
+## v1.9.0 — 2026-08-09
+
+The defects an audit of the Stata Journal manuscript found in the CODE rather
+than in the paper. They land first so the article documents shipped behaviour
+instead of behaviour it wished for.
+
+### Removed
+
+- **`_dtlb_ipums_extract` is no longer shipped.** Its own header calls it a
+  SKELETON / DESIGN STUB, it has no help file, and every path through it ends
+  in a `TODO` display or an `exit 198`. A file like that has no business on a
+  user's ado-path: `which` finds it and tab-completion offers it. The manifest
+  entry returns, with a `.sthlp` beside it, in the release that implements the
+  workflow.
+
+  Note that `net install ..., replace` does not delete files dropped from a
+  manifest, so existing 1.8.x installs keep a stale copy.
+
+- **`ibge`'s `subfoldr()` and `filename()` options are gone.** Both are
+  read-path options on `datalib`; `ibge` is an importer, and neither has any
+  counterpart in `_dtlb_mkdir`, which is where its arguments go.
+
+### Fixed
+
+- **`ibge` declared four options and threw them away.** `path()`, `module()`,
+  `master` and `adaptation` are `_dtlb_mkdir`'s own options, and `ibge` already
+  forwarded six of their siblings — `vm()`, `va()`, `collection()`,
+  `harmonization()`, `mkdir`, `overwrite`. These four were declared beside them
+  and dropped on the floor, so `ibge, master` requested a master vintage from a
+  call that never heard of it.
+
+  They are now wired through, not deleted. The target existed; deleting would
+  have removed a stated intention and forced the article to retract a claim it
+  can instead simply keep. `panel` deposits a PANEL adaptation of its own, so
+  combining it with `master` or `adaptation` is refused rather than silently
+  resolved one way.
+
+- **`ibge, country()` was discarded.** Both `_dtlb_mkdir` calls hardcoded BRA,
+  so `ibge, country(XAA)` deposited into BRA without comment. BRA is the right
+  destination — this module wraps DataZoom's readers for Brazilian household
+  surveys — but that is now stated: `country()` defaults to BRA, is passed
+  through, and anything else is refused.
+
+- **`ibge, survey()` accepted anything.** An unrecognised acronym fell through
+  every dispatcher branch and the command returned silently having done
+  nothing. It is now validated up front, which makes `survey()` effectively
+  mandatory: `ibge, year(2015)` previously reached `_dtlb_mkdir` and now exits
+  198.
+
+  The validation sits ABOVE the DataZoom guard deliberately. That guard exits
+  when DataZoom is absent, so validation below it would be unreachable on every
+  machine that does not already have DataZoom — including every machine on
+  which these messages could be demonstrated.
+
+- **A dispatcher branch that could never run.** The fourth branch compared
+  `upper(survey)` against the mixed-case literal `"PNADCanual"`, which no input
+  can match. The literal is corrected — and the branch is then explicitly
+  refused as not yet supported, because it calls `datazoom_pnadcontinua_anual`,
+  nothing in `qa/` exercises `ibge`, and it has therefore never been executed
+  even once. Shipping an untested path as though it worked is the failure this
+  release is about.
+
+- **The IPUMS skeleton created a lowercase vintage tree.** It was the single
+  place in `src/` spelling the inner folders `data/original`, `data/stata`,
+  `doc` — agreeing with the manuscript's specification against every other file
+  and against the loader that reads `Data/Stata` literally. A skeleton is a
+  contract for its implementation, so a contract in the wrong case is worse
+  than none.
+
+### Changed — documentation that ships inside the package
+
+- `datalib_config.ado`'s header claimed every option is passed through to
+  `getuserconfig` and every `r()` is the one it returned. `list` and
+  `retryvolumes` are handled locally and exit first, so neither reaches it and
+  neither leaves anything in `r()`. The help file has said so since both
+  options landed; the header did not, and the manuscript inherited the
+  header's version.
+
+- `qa/run_tests.do` described SMOKE as "does a fresh install behave". SMOKE adds
+  `src/` to the adopath and tests the internals in place; INSTALL is the
+  fresh-install leg.
+
+- `datalib.pkg`'s Requires text named the wrong condition for the Stata 16
+  floor. The gate is **declaration, not module count**: a single-module load of
+  a self-describing vintage reaches version-16 code via `_dtlb_mergeplan`, and
+  a multi-module load that falls through to the legacy per-collection path does
+  not.
+
+- `src/registry/README.md` listed `_dtlb_ctrycheck` and `_dtlb_adaptcheck` as
+  consumers of `countries.yaml` and `harmonizations.yaml`. Neither opens either
+  file — both list directories and split folder names — and neither YAML ships.
+  This is where the manuscript's identical claim came from.
+
+- `ibge.sthlp` documented a `noclean` option that does not exist, and inverted
+  the default of the one that does. The code declares `clean` and cleans only
+  when it is given, so the help named an option that errors and described the
+  opposite default. (Copilot, PR #69.)
+
+- `datalib.sthlp` never documented `nowarning`, which `datalib.ado` declares and
+  forwards. It now does, including the part that is easy to miss: it suppresses
+  the per-module `r(rows_*)` and `r(distinct_*)` scalars along with the report,
+  because they are returned from inside the same block.
+## v1.8.5 — 2026-08-09
+
+Documentation only; no behaviour changes.
+
+### Changed
+
+- `_foldernav.ado`'s in-file **Version History** gains its v1.8.4 entry. The
+  file header said 1.8.4 while the history below still ended at v1.8.1, so the
+  file could not be traced from its own contents. (Copilot, PR #67.)
+
+- The v1.8.4 changelog entry quoted a `set trace on` line containing Stata's
+  own backtick-quote nesting inside a single-backtick span, which does not
+  render. Moved to a fenced block. (Copilot, PR #67; the first attempt at this
+  changed nothing — the edit matched on `\n` against a CRLF file — and the note
+  here claimed a fix that had not happened. Caught on PR #68 by reading the
+  entry rather than the claim about it.)
+
+  Both are one-line fixes that nonetheless move the release, because
+  `check_versions.py` requires any modified versioned file to change its stamp
+  — so a comment edit to a shipped `.ado` costs a PATCH bump, and letting one
+  file run ahead of `VERSION` is the inconsistency #65 existed to remove.
+
+## v1.8.4 — 2026-08-09
+
+### Fixed
+
+- **Section links died after a file load.** `DATA` / `DOC` / `PROGRAMS` resume
+  from the folder the previous call left in `r(subfoldr)` — the most volatile
+  store Stata has, and a chain exactly one command deep. Sibling clicks worked
+  only because each relayed the incoming value forward with `return add`; the
+  moment anything else `rclass` ran in between, the folder was gone.
+
+  A file load is exactly that, so the links broke at the point they are most
+  useful: someone has just opened the data and now wants the README beside it.
+  Confirmed with `set trace on` — the trace shows an empty `prevfoldr` on the
+  failing call, because `_dtlb_load`'s own `return add` had replaced `r()` with
+  its load results, which carry no `subfoldr`:
+
+  ```stata
+  - local prevfoldr `"`r(subfoldr)'"'
+  = local prevfoldr `""'
+  ```
+
+      datalib, subfoldr(XBB_2019_XHS_v01_M)   -> DATA / DOC / PROGRAMS
+      datalib, subfoldr(DATA)                 -> lists the two .dta
+      datalib, country(XBB) ... clear data    -> loads one
+      datalib, subfoldr(DOC)                  -> "no longer known"
+
+  The folder is now published alongside the root, which is the remedy this
+  codebase already uses for the same reason: the SMCL links carry no
+  `library()`, so the resolved root is published to `${datalib}` rather than
+  scoped to one call. The folder needs publishing by the same argument.
+
+  It is a **fallback, not a replacement** — `r(subfoldr)` still wins when it is
+  there, so an immediate sibling click behaves exactly as before and the memo
+  can never override a fresher answer. The root is remembered with it, so a
+  memo taken in one library is refused rather than used to build a path in
+  another.
+
+### Testing
+
+- `qa/test_config_seam.do` gains **L6** and **L7**. L6 asserts twice: first that
+  an intervening `rclass` command really does wipe `r(subfoldr)` — without which
+  the case would pass on a chain that was never broken — then that the click
+  resolves anyway. L7 pins the refusal across libraries. 51 checks → 54.
+
+## v1.8.3 — 2026-08-09
+
+### Fixed
+
+- **A drive Windows reports as *Reconnecting* is now dropped, not waited on.**
+
+  `__dtlb_volstate` knew two states, connected and disconnected. Windows has a
+  third: while a share is coming back it reports `Reconnecting Z:`. That word
+  was unrecognised, so the command answered `"unknown"` — and `"unknown"` is
+  the fail-safe answer that means *proceed as before*. A drive in that state
+  still blocks on touch, so `direxists` went on paying the operating system's
+  full timeout, which is the six minutes this guard exists to avoid.
+
+  Waiting is the wrong trade even though the reconnect might succeed. A retry
+  costs one command; an un-waited six minutes cannot be recovered. So the root
+  is dropped and marked dead for the session, and reconsidered only on an
+  explicit second attempt — `datalib_config, retryvolumes`.
+
+  The state is now reported rather than flattened: `_dl_islib` returns
+  `r(volstate)` and names it in the note, so "reconnecting" and "disconnected"
+  stay distinguishable to whoever reads the message.
+
+- **A healthy drive could be recorded offline for good.** The persisted memo
+  was a one-way door. Guard (0) reloaded the record, guard (1b) asked the
+  operating system and was told the drive was connected, and guard (2) skipped
+  it anyway — the cheap authoritative answer obtained and then ignored.
+
+  A volume the OS reports **connected** now clears its own record, in the
+  session and in the file. The file is rewritten rather than truncated: other
+  volumes on that list may still be dead and their record is still worth
+  having. Only `connected` clears it; `unknown` must not, because that is the
+  answer for a shell we could not run or a status word we did not recognise,
+  and it is no evidence at all.
+
+- **A missing directory was mistaken for an unreachable drive.** `direxists`
+  returns 0 for two different facts — *this drive did not answer* and *this
+  drive answered, and there is no such directory* — and the failure path
+  condemned the whole volume either way, permanently.
+
+  One lookup of a path that happened not to be there was therefore enough to
+  hide every library on that drive, in that session and in all later ones. So:
+  when the OS says the drive is connected, a missing directory is an ordinary
+  missing directory. Nothing timed out, and nothing is remembered.
+
+  Observed together on the author's machine: `S:` was recorded during a VPN
+  outage, and every later session answered `No datalib library at: S:/datalib`
+  for a share that was mounted, healthy, and named `datalib`. With the fix the
+  same call resolves and lists 104 countries, and the stale record clears
+  itself.
+
+- **`_dtlb_mkdir` guarded a tree it was not writing to.** `path()` is a
+  required option and every `mkdir` writes under it, but the read-only guard
+  and the survey checks read `${datalib}` instead — a different tree whenever a
+  caller passes anything else.
+
+  Production never saw it: both callers pass `path(${datalib})`, so the two
+  strings coincide. The QA suite did. It passes a scratch directory, and on a
+  machine whose configured root is an offline share `_dl_isdemo` then walked up
+  to **eight** levels of `confirm file` on that unrelated root, paying the
+  operating system's timeout each time. `qa/test_checkers.do` stalled at C7 and
+  never finished. The guards and checks now read `path()`, like the `mkdir`s
+  they are guarding.
+
+- **A guard in `_dtlb_mkdir` that could not run.** A hand-written emptiness
+  check tested `${datalib}` while every `mkdir` in the command writes under
+  `path()`. Rewording it to name `path()` only made clearer that the branch is
+  unreachable: `path()` is a *required* option, and `syntax` rejects both a
+  missing one and an empty one before that line. Removed rather than reworded —
+  a message nobody can see cannot mislead, but it cannot help either, and
+  keeping it implies a check `syntax` is already making.
+  (Copilot on PR #63; removed in PR #64.)
+
+- **`r(skipped_unreachable)`** replaces `r(skipped_disconnected)` as the name of
+  the skip flag, which stopped being accurate once it also covered
+  `reconnecting`. The old name is still returned for any caller that reads it,
+  and `r(volstate)` says which state it actually was. (Copilot, PR #62.)
+
+### Testing
+
+- `qa/test_config_seam.do` gains **V1–V6**, the first coverage this guard has
+  had. Every case pre-sets the volume state, so no case waits on a network —
+  a test that probed a real mapped drive would be the exact wait being removed.
+  V4 pins the invalidation, V5 that the file forgets one volume and not the
+  others, and V6 the fail-safe: an unclassifiable state must neither skip nor
+  clear, because a wrong answer there hides a reachable library, which is worse
+  than a slow one. 45 checks → 51.
+
+  The suite also redirects the persisted memo at a tempfile. Proving V2 red
+  lets the case fall through to the probe, and without the redirect that writes
+  a drive letter into the operator's own `~/.datalib/offline_volumes.txt` — a
+  test that can make their library invisible tomorrow.
+
+## v1.8.1 — 2026-08-08
+
+### Fixed
+
+- **Navigation printed folder names that do not exist on disk.** Stata's `: dir`
+  lowercases directory names on Windows, and the compensating `upper()` over-shot:
+  the canonical form is uppercase throughout *except* the `v` of `vNN`, so
+  `ZZA_2022_XHS_v01_M` was displayed and linked as `ZZA_2022_XHS_V01_M`. Both the
+  printed name (offered for copying) and the clickable link therefore failed on any
+  case-sensitive filesystem. Windows hid it.
+
+## v1.8.0 — 2026-08-08
+
+The catalogue can be browsed as a clickable menu: list, grid or matrix.
+
+### Added
+
+- **`_dtlb_show`** renders a catalog frame in the Results window as a **list**,
+  a **grid** or a **matrix**. These are not three programs. They are one pivot
+  with zero, one or two dimensions bound to axes: a list never aggregates, a
+  grid aggregates to *exists*, a matrix must aggregate because a cell can
+  cover many records.
+
+  **Only the matrix shows absence.** A list of what exists has no row for the
+  survey nobody deposited; a cross-tab allocates a cell to every combination
+  of its axes, so a gap is rendered. The question usually put to a catalogue
+  is not "what do we have" but "do we have 2019 for this country", and that is
+  answered by an empty cell.
+
+- **`datalib_browse`** uses it for navigation, in three depths reached by
+  clicking rather than retyping:
+
+      datalib_browse                          countries by library
+      datalib_browse, country(XAA)            surveys by year
+      datalib_browse, country(XAA) survey(XHS)   DATA / CODE / DOC per vintage
+
+  The third depth exists because a vintage on disk is three things. Someone
+  opening a survey they did not build needs the harmonization script and the
+  README at least as often as the dataset.
+
+  `search()` reports how many rows it hid — a filtered view that looks like a
+  full one is worse than no filter. Drilling is not counted as hiding: rows
+  dropped by asking for XAA were not hidden from anyone.
+
+- **`library` column on the catalog frame**, added to both the filesystem and
+  the REST paths so the schema cannot depend on which built it.
+
+### Notes
+
+- **Not `tabdisp`.** Measured on Stata 17: it does not interpret SMCL in cells
+  (a 14-character link that fits whole renders as literal markup, while the
+  same string through `display` renders as a working link) and truncates
+  string cells at 20 characters. Either alone rules it out for a clickable
+  menu — which is why datalibweb's `dlw_display` is hand-rolled too.
+
+- **Width arithmetic uses the label, not the markup.** Also measured: SMCL
+  directives cost no display columns. A matrix wider than `c(linesize)`
+  reports the columns it could not draw rather than truncating in silence.
+
+- An adaptation is not reachable with `vm()` alone — that opens the master
+  underneath it. Depth-3 links carry `va()` and `collection()`, so an
+  adaptation row opens the adaptation.
+
 ## v1.7.0 — 2026-08-08
 
 One case, everywhere — and a fixture check that can actually fail.

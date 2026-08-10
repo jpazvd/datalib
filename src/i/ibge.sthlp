@@ -1,8 +1,8 @@
 {smcl}
 {hline}
-{help ibge}{right:Version 1.0.1}
+{help ibge}{right:Version 3.0.2}
 {right:Author: Joao Pedro Azevedo}
-{right:Date: 2024-08-18}
+{right:Date: 2026-08-09}
 {hline}
 
 {title:Title}
@@ -14,16 +14,16 @@
 {p 6 16 2}{cmd:ibge} [{cmd:varlist}] [{cmd:in}] [{cmd:if}] {cmd:,} {cmd:survey(string)} {cmd:country(string)} {cmd:year(string)} [{cmd:options}]{p_end}
 
 {title:Description}
-{pstd}{cmd:ibge} is a wrapper for the DataZoom program designed to facilitate the loading, processing, and renaming of IBGE (Instituto Brasileiro de Geografia e Estatística) data files. It supports data from the PNAD and PNADC surveys and automates several tasks including data file naming and organization based on the Datalib folder structure convention. When a {cmd:saving} path is not specified, the program defaults to the Datalib folder structure.{p_end}
+{pstd}{cmd:ibge} is a wrapper for the DataZoom program designed to facilitate the loading, processing, and renaming of IBGE (Instituto Brasileiro de Geografia e Estatística) data files. It supports data from the PNAD and PNADC surveys (annual PNADC is recognised but not yet supported) and automates several tasks including data file naming and organization based on the Datalib folder structure convention. When a {cmd:saving} path is not specified, the program defaults to the Datalib folder structure.{p_end}
 
-{pstd}This program integrates several utilities, including {cmd:_mkdir} for directory management and DataZoom commands for data processing, providing a streamlined workflow for handling IBGE data files.{p_end}
+{pstd}This program integrates several utilities, including {help _dtlb_mkdir} for directory management and DataZoom commands for data processing, providing a streamlined workflow for handling IBGE data files.{p_end}
 
 {title:Options}
 {synoptset 27 tabbed}{...}
 {synopthdr:Options}
 {synoptline}
-{synopt:{opt survey(string)}}Specifies the survey to be processed. Supported surveys are PNAD and PNADC.{p_end}
-{synopt:{opt country(string)}}Specifies the country code (e.g., BRA for Brazil).{p_end}
+{synopt:{opt survey(string)}}Survey to process: {cmd:PNAD} or {cmd:PNADC}. Anything else is refused before any work is done; it used to fall through every branch and return silently. {cmd:PNADCANUAL} is recognised but gated -- the annual-PNADC path exists and has never been executed, so it is refused rather than offered.{p_end}
+{synopt:{opt country(string)}}Destination country code. It must be {cmd:BRA}, and defaults to it: this module wraps DataZoom's readers for Brazilian household surveys. Any other value is refused rather than silently redirected to BRA, which is what happened before version 3.0.2.{p_end}
 {synopt:{opt year(string)}}Specifies the survey year(s) to be processed.{p_end}
 {synopt:{opt original(string)}}Specifies the path to the original data files for processing.{p_end}
 {synopt:{opt saving(string)}}Specifies the path where the processed files will be saved. If not specified, the Datalib folder structure is used.{p_end}
@@ -34,15 +34,13 @@
 {synopt:{opt idbas}}Includes identification of basic geographical units for PNADC.{p_end}
 {synopt:{opt nid}}Includes the National Identification Data (NID) for PNADC.{p_end}
 {synopt:{opt idrs}}Includes the Regional Sample Identification for PNADC.{p_end}
-{synopt:{opt path(string)}}Specifies the base path for data processing.{p_end}
-{synopt:{opt subfoldr(string)}}Specifies the subfolder to be processed within the base path.{p_end}
-{synopt:{opt filename(string)}}Specifies the filename of the processed data to be saved.{p_end}
+{synopt:{opt path(string)}}Library to deposit into, passed to {help _dtlb_mkdir}. Defaults to {cmd:${datalib}}. Declared but discarded before version 3.0.2.{p_end}
 {synopt:{opt norename}}Prevents automatic renaming of data files to match the Datalib naming convention.{p_end}
-{synopt:{opt noclean}}Prevents the automatic cleaning and deletion of temporary files and subfolders.{p_end}
+{synopt:{opt clean}}Deletes the temporary sub-folders DataZoom leaves behind once their contents have been moved into place. Cleaning is NOT the default: without this option the working folders are kept.{p_end}
 {synopt:{opt overwrite}}Overwrites existing files in the destination folder without prompting.{p_end}
-{synopt:{opt module(string)}}Specifies the module(s) to be processed. If not specified, all available modules are processed.{p_end}
-{synopt:{opt master}}Indicates that the program should check for master files (currently not supported).{p_end}
-{synopt:{opt adaptation}}Indicates that the program should check for adaptation files.{p_end}
+{synopt:{opt module(string)}}Module(s) to create, passed to {help _dtlb_mkdir}. Declared but discarded before version 3.0.2.{p_end}
+{synopt:{opt master}}Deposit as a master vintage, passed to {help _dtlb_mkdir} -- which itself does not yet support it and says so. Declared but discarded before version 3.0.2. Cannot be combined with {cmd:panel}.{p_end}
+{synopt:{opt adaptation}}Deposit as an adaptation, passed to {help _dtlb_mkdir}. Declared but discarded before version 3.0.2. Cannot be combined with {cmd:panel}, which deposits a PANEL adaptation of its own.{p_end}
 {synopt:{opt collection(string)}}Specifies the collection name for organizing data. Defaults to 'HLT' if not specified.{p_end}
 {synopt:{opt harmonization(string)}}Specifies the harmonization file name, if applicable.{p_end}
 {synopt:{opt va(string)}}Specifies the vintage number for adaptation files.{p_end}
@@ -74,10 +72,10 @@
 {p 4 4 2}Minh Cong Nguyen, World Bank{p_end}
 
 {title:Version}
-{p 4 4 2}1.0.1{p_end}
+{p 4 4 2}3.0.2{p_end}
 
 {title:Date}
-{p 4 4 2}2024-03-21{p_end}
+{p 4 4 2}2026-08-09{p_end}
 
 {title:Also see}
 

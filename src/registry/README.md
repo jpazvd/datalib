@@ -6,12 +6,26 @@ YAML-backed configuration for datalib's catalog and validation machinery.
 
 | File | Schema | Used by |
 |---|---|---|
-| `countries.yaml` | `<ISO3>: {name, region, income_level, ...}` | `_dtlb_ctrycheck`, catalog frame |
-| `harmonizations.yaml` | `<HHHH>: {name, scope, domain, ...}` | `_dtlb_adaptcheck`, catalog frame |
+| `countries.yaml` | `<ISO3>: {name, region, income_level, ...}` | reference data only — see note below |
+| `harmonizations.yaml` | `<HHHH>: {name, scope, domain, ...}` | reference data only — see note below |
 | `catalogs.yaml` | `<short>: {name, base_url, api_version, auth_type, ...}` | `_dtlb_catalogregistry`, `_dtlb_catalog` REST paths |
 | `examples/datalib.yaml` | per-survey metadata template | reference for survey owners |
 
+> **Neither checker opens either file.** `_dtlb_ctrycheck` and `_dtlb_adaptcheck`
+> list directories and split folder names — `_dtlb_ctrycheck.ado:36` and
+> `_dtlb_adaptcheck.ado:28` are both `local list : dir ...`, and a repo-wide grep
+> for either filename finds no `.ado` that reads it. Neither YAML ships, either:
+> `datalib.pkg` installs only `catalogs.yaml`. They are reference data a validator
+> would consume if one existed.
+>
+> This table said otherwise until 1.9.0, and the Stata Journal manuscript
+> inherited the claim from it — which is why the correction belongs here and not
+> only in the paper.
+
 ## How files are read
+
+These are the primitives available, and how a consumer *would* read the files —
+not a description of anything a shipped `.ado` does today.
 
 The vendored YAML library at [`../y/`](../y/) provides the parsing primitives:
 

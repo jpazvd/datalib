@@ -42,6 +42,21 @@
 *   W11 create's three outcomes are distinguishable (created/appended/unchanged)
 *   W12 quietly silences the write paths without changing what they return
 *
+* NAVIGATION CLICK-STATE:
+*   L6  a DATA/DOC/PROGRAMS click still resolves after an intervening rclass
+*       command has wiped r(subfoldr) -- the case a file load creates
+*   L7  a memo taken in another library is refused rather than reused
+*
+* THE VOLUME GUARD (every state is pre-set; no case waits on a network):
+*   V1  a disconnected volume is skipped and marked dead
+*   V2  a RECONNECTING volume is skipped on the same terms -- not waited on
+*   V3  the caller is told which state it was
+*   V4  a connected volume falls through the guard AND stops being dead --
+*       the memo is not a one-way door
+*   V5  the persisted record forgets that one volume, not the others
+*   V6  an unclassifiable volume neither skips nor clears -- the fail-safe,
+*       which is what keeps a best-effort OS test from hiding a library
+*
 * Run: stata -b do qa/test_config_seam.do [<repo-root>]
 * Exit code: non-zero on any failure.
 *===============================================================================
@@ -447,7 +462,7 @@ reset_env
 
 *===============================================================================
 display _newline as text _dup(80) "="
-display as text "L1-L5 -- datalib, library(): the resolution preamble"
+display as text "L1-L7 -- datalib, library(): resolution and click-state"
 display as text _dup(80) "="
 
 * Ported from unicef-drp/datalib-unicef-dev @ v0.9.33 (a66b6b6). These cases pin
@@ -509,8 +524,157 @@ quietly capture datalib, subfoldr(XAA) path("`liblib'/datalib")
 chk, cond(`"${datalib_checked}"'=="SENTINEL") ///
     msg("L5 path()+subfoldr() together skip the resolution (the guard)")
 
+* L6 -- a section click still resolves AFTER an intervening rclass command.
+*
+* This is the case the r(subfoldr) chain could not carry. Sibling clicks work
+* only because each relays the incoming r(subfoldr) forward with -return add-,
+* so the chain is exactly one command deep; a file load in between wipes it,
+* and the DOC / PROGRAMS links die at the point they are most useful -- someone
+* has just opened the data and now wants the README beside it.
+*
+* -datalib_root- stands in for the loader here: any rclass command clears r(),
+* and this one is hermetic and instant. The assertion that matters is the FIRST
+* one -- r(subfoldr) really is gone -- because without it L6 would pass on a
+* chain that was never broken.
+global datalib "`liblib'/datalib"
+global datalib_checked "`liblib'/datalib"
+global dtlb_navfoldr ""
+global dtlb_navroot  ""
+quietly datalib, subfoldr(XAA_2015_XHS_v01_M)
+quietly datalib_root, root("`liblib'/datalib")
+chk, cond(`"`r(subfoldr)'"'=="") ///
+    msg("L6a an intervening rclass command really does wipe r(subfoldr)")
+
+capture noisily datalib, subfoldr(DOC)
+chk, cond(_rc==0) ///
+    msg("L6b a DOC click still resolves after it (rc `=_rc')")
+
+* L7 -- the memo is scoped to the library it was taken in. A folder is only
+* meaningful inside its own library, so pointing datalib somewhere else must
+* not resume from a folder that belongs to the old tree. Refusing to guess is
+* the whole reason the root is remembered beside the folder.
+global datalib "`liblib'"
+global datalib_checked "`liblib'"
+capture noisily datalib, subfoldr(DOC)
+chk, cond(_rc==198) ///
+    msg("L7 a memo from another library is refused, not reused (rc `=_rc')")
+
+global dtlb_navfoldr ""
+global dtlb_navroot  ""
+
 reset_env
 global datalib_checked ""
+
+*===============================================================================
+display _newline as text _dup(80) "="
+display as text "V1-V6 -- the volume guard: which OS states make _dl_islib skip"
+display as text _dup(80) "="
+
+* This guard is what keeps -datalib- from waiting out the operating system's
+* own timeout on a dead network share (measured: 366.90 seconds for one call).
+* Every case below is hermetic: the volume state is PRE-SET, so guard (1b)
+* never shells out, and no case reaches -direxists- -- which is the point, since
+* a test that probed a real drive letter would be exactly the wait we removed.
+*
+* Q: is used because it is conventionally unmapped; nothing here depends on
+* that, as no case gets far enough to touch it.
+
+reset_env
+
+* Redirect the persisted dead-volume memo at a tempfile, and mark it loaded so
+* guard (0) does not read the operator's real one. Without this the suite writes
+* to ~/.datalib/offline_volumes.txt: proving V2 red (guard reverted) lets the
+* case fall through to the probe, which records the failure permanently. A test
+* that leaves a drive letter in the operator's persistent state is a test that
+* can make their library invisible tomorrow.
+tempfile memo
+global dtlb_deadmemo_file  = subinstr("`memo'", "\", "/", .)
+global dtlb_deadmemo_loaded 1
+
+* V1 -- disconnected: skip, and remember it for the rest of the session so the
+* remaining candidates on that volume are not probed either.
+global dtlb_volstate_Q "disconnected"
+global dtlb_dead_Q     ""
+quietly _dl_islib "Q:/no_such_library"
+chk, cond("`r(skipped_unreachable)'"=="1" & "${dtlb_dead_Q}"=="1") ///
+    msg("V1 a disconnected volume is skipped and marked dead")
+
+* V2 -- reconnecting: the state the guard did not know. Windows reports it
+* while a share is coming back, and a drive in that state still blocks on
+* touch, so it must be dropped on the same terms as a disconnected one.
+* Before the fix __dtlb_volstate answered "unknown" here and the fail-safe
+* path let the probe through.
+global dtlb_volstate_Q "reconnecting"
+global dtlb_dead_Q     ""
+quietly _dl_islib "Q:/no_such_library"
+chk, cond("`r(skipped_unreachable)'"=="1" & "${dtlb_dead_Q}"=="1") ///
+    msg("V2 a reconnecting volume is skipped and marked dead, not waited on")
+
+global dtlb_volstate_Q "reconnecting"
+global dtlb_dead_Q     ""
+quietly _dl_islib "Q:/no_such_library"
+chk, cond("`r(volstate)'"=="reconnecting") ///
+    msg("V3 the caller is told WHICH state it was, not just that it skipped")
+
+* V4 -- the fail-safe, and the one state that is allowed to CANCEL a memo.
+*
+* "connected" is not merely permission to fall through; it is evidence that a
+* record saying otherwise is stale, so it clears the dead flag. Before this the
+* memo was a one-way door: guard (0) reloaded the record, guard (1b) asked the
+* OS, was told the drive was fine, and guard (2) skipped it anyway. A share
+* that went offline once during a VPN outage stayed invisible for good, and the
+* message read "No datalib library at:" for a mounted, healthy directory named
+* datalib -- which is what happened to S: on the author's machine.
+*
+* Q: is unmapped, so this case does reach -direxists- and returns fast on a
+* letter with no mapping. Nothing here waits on a network.
+tempname vh
+file open `vh' using "${dtlb_deadmemo_file}", write text replace
+file write `vh' "Q" _n
+file write `vh' "W" _n
+file close `vh'
+
+global dtlb_volstate_Q "connected"
+global dtlb_dead_Q     "1"
+quietly _dl_islib "Q:/no_such_library"
+chk, cond("${dtlb_dead_Q}"=="" & "`r(skipped_unreachable)'"=="") ///
+    msg("V4 a connected volume falls through the guard and stops being dead")
+
+* V5 -- W must survive. Other volumes on that list may still be dead, and their
+* record is still worth having. Rewriting the file rather than truncating it is
+* the difference between forgetting one drive and forgetting all of them.
+local kept ""
+file open `vh' using "${dtlb_deadmemo_file}", read text
+file read `vh' vline
+while (r(eof)==0) {
+    local vv = strtrim(`"`macval(vline)'"')
+    local kept `"`kept' `vv'"'
+    file read `vh' vline
+}
+file close `vh'
+local kept = strtrim("`kept'")
+chk, cond("`kept'"=="W") ///
+    msg("V5 the record forgets that volume and keeps the others (kept:`kept')")
+
+* V6 -- "unknown" is the answer __dtlb_volstate gives when it cannot classify
+* what the OS said: a shell it could not run, a status word in a language it
+* does not know. It must fall THROUGH the skip -- a wrong answer there hides a
+* reachable library, which is worse than a slow one -- and it must NOT clear a
+* memo either, because it is no evidence about the drive at all. Proven without
+* a probe by letting guard (2) answer: reaching it proves the volstate guard
+* declined, and its answering at all proves the flag was left standing.
+global dtlb_volstate_Q "unknown"
+global dtlb_dead_Q     "1"
+quietly _dl_islib "Q:/no_such_library"
+chk, cond("`r(skipped_dead)'"=="1" & "`r(skipped_unreachable)'"=="") ///
+    msg("V6 an unclassifiable volume neither skips nor clears (fail-safe)")
+
+* Forgetting all of this is -datalib_config, retryvolumes-, which clears both
+* dtlb_volstate_<L> and dtlb_dead_<L> for A-Z (datalib_config.ado:85-88). It is
+* not exercised here: it erases the operator's real ~/.datalib/offline_volumes.txt,
+* and __dtlb_userhome reads USERPROFILE, which a do-file cannot redirect.
+global dtlb_volstate_Q ""
+global dtlb_dead_Q     ""
 
 *===============================================================================
 display _newline as text _dup(80) "="

@@ -1,7 +1,7 @@
 *******************************************************
 * _dtlb_mkdir.ado 
 * Joao Pedro Azevedo
-*! v1.2.1       <20240817>       JPAzevedo
+*! v1.8.3       <20260809>       JPAzevedo
 *******************************************************
 
 capture program drop _dtlb_mkdir
@@ -148,18 +148,33 @@ program define _dtlb_mkdir, rclass
         local latest latest
     }
 
-    * Check if datalib path has been specified. If not, error break.
-    if ("${datalib}" == "") {
-        noi di as err "Error: Path to datalib needs to be specified. Global datalib needs to be specified."
-        exit 198
-    }
+    * THE TARGET IS path(). It is a required option, every -mkdir- below writes
+    * under it, and the guards and checks read it too. They used to read
+    * ${datalib} instead -- a different tree whenever a caller passed anything
+    * else -- so the command created directories in one place while asking
+    * questions about another.
+    *
+    * Production never saw it, because both callers pass path(${datalib}) and
+    * the two strings coincide. The QA suite did: it passes a scratch directory,
+    * and on a machine whose configured root is an offline share _dl_isdemo then
+    * walked up to EIGHT levels of -confirm file- on that unrelated root,
+    * paying the operating system's timeout each time. qa/test_checkers.do
+    * stalled at C7 and never finished.
+    *
+    * There was a hand-written emptiness check here. It tested ${datalib} while
+    * the command wrote under path(), and rewording it to name path() only made
+    * clearer that it can never run: path() is a REQUIRED option, and -syntax-
+    * rejects both a missing one and an empty one with "option path() required"
+    * before this line is reached. Removed rather than reworded -- a message
+    * nobody can see cannot mislead, but it cannot help either, and keeping it
+    * implies a check that -syntax- is already making. (Copilot, PR #63.)
 
     * Refuse a library whose .datalib marker carries "readonly: 1". The check
     * reads the marker rather than comparing paths, so it survives copies and
     * path spellings; see the fuller note in _dtlb_put.ado.
-    capture _dl_isdemo `"${datalib}"'
+    capture _dl_isdemo `"`path'"'
     if (_rc==0 & r(readonly)==1) {
-        noi di as err `"{p}Refusing to create a vintage inside a read-only library at: ${datalib}{p_end}"'
+        noi di as err `"{p}Refusing to create a vintage inside a read-only library at: `path'{p_end}"'
         noi di as err `"{p}Its {bf:.datalib} marker carries {bf:readonly: 1}. Set your own archive with {bf:datalib_root, root(}{it:path}{bf:) set}.{p_end}"'
         exit 198
     }
@@ -220,7 +235,7 @@ program define _dtlb_mkdir, rclass
         * Survey check
         *-----------------------------------------
         if ("`survey'" != "") {
-            _dtlb_svycheck , path("${datalib}/`country'") survey("`survey'")
+            _dtlb_svycheck , path("`path'/`country'") survey("`survey'")
             local svynumb = `r(svynumb)'
             local svylist = r(svylist)
             local survey = "`survey'"
@@ -237,7 +252,7 @@ program define _dtlb_mkdir, rclass
             }
         } 
         else {
-            _dtlb_svycheck , path("${datalib}/`country'")
+            _dtlb_svycheck , path("`path'/`country'")
             local svynumb = `r(svynumb)'
             local svylist = r(svylist)
             local survey = r(latestsurvey)
@@ -299,23 +314,23 @@ program define _dtlb_mkdir, rclass
             }
 
             if (`svycheck' == 1 & "`survey'" == "" & "`latest'" == "latest" & "`year'" == "") {
-                _dtlb_svycheck , path("${datalib}/`country'") country(`country')
+                _dtlb_svycheck , path("`path'/`country'") country(`country')
                 local svylist = r(svylist)
                 local year = r(latestyear)
                 local survey = r(latestsurvey)
             }
 
             if (`svycheck' == 1 & "`survey'" != "") & ("`year'" == "") {
-                _dtlb_svycheck , path("${datalib}/`country'") country(`country') survey("`survey'")
+                _dtlb_svycheck , path("`path'/`country'") country(`country') survey("`survey'")
                 local svylist = "`survey'"
                 local year = r(latestyear)
                 local survey = "`survey'"
             }
 
             if (`svycheck' == 1 & "`survey'" != "") & ("`year'" != "") {
-                _dtlb_svycheck , path("${datalib}/`country'") country(`country') survey("`survey'") year("`year'")
+                _dtlb_svycheck , path("`path'/`country'") country(`country') survey("`survey'") year("`year'")
                 if (`r(svynumb)' == 1) {
-                    _dtlb_svycheck , path("${datalib}/`country'/`country'_`year'_`survey'")
+                    _dtlb_svycheck , path("`path'/`country'/`country'_`year'_`survey'")
                     local svylist = "`survey'"
                     local year  = `year'
                     local survey = "`survey'"

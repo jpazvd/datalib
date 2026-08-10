@@ -1,7 +1,7 @@
 *******************************************************
 ** _dl_islib
 * Joao Pedro Azevedo
-*! v1.7.1
+*! v1.8.2
 *******************************************************
 * Normalise a path and decide whether it is a datalib LIBRARY (not merely an
 * existing directory). Used by datalib_root's -find- mode so that a missing
@@ -12,6 +12,14 @@
 *   r(path)   normalised path (forward slashes, no trailing separator except
 *             on a drive root such as Z:/)
 *   r(exists) 1 if the directory exists
+*   r(skipped_unreachable), r(volstate)
+*             set when the root was NOT read because the operating system
+*             reports its drive disconnected or reconnecting. r(volstate)
+*             carries which of the two it was. r(skipped_disconnected) is the
+*             older name for the same flag, kept for callers that read it.
+*   r(skipped_offline), r(skipped_dead)
+*             set when the skip came from ${datalib_offline} or from the
+*             session/persisted memo instead
 *   r(islib)  1 if it exists AND looks like a library, by any of three tests:
 *             it is named "datalib", or it carries a .datalib marker file, or it
 *             holds a <CCC>/<CCC>_* GRANDCHILD PAIR -- a 3-character child that
@@ -153,11 +161,83 @@ program define _dl_islib, rclass
             if (_rc==0) global dtlb_volstate_`vol' `"`r(state)'"'
             else        global dtlb_volstate_`vol' "unknown"
         }
-        if (`isletter' & "${dtlb_volstate_`vol'}"=="disconnected") {
-            noi di as text `"{p}note: drive {bf:`vol':} is mapped but disconnected, so {bf:`p'} was not read. The operating system reported this without contacting the share; probing it would have cost minutes.{p_end}"'
+
+        * Checked on every call rather than only when the state was just
+        * fetched: the invalidation should react to what the state SAYS, not to
+        * where it came from, and a string comparison costs nothing.
+        if (`isletter' & "`vol'"!="C") {
+            * A volume the OS reports CONNECTED is not dead, whatever an
+            * earlier session recorded. Without this the memo is a one-way
+            * door: guard (0) loads it, this guard asks the OS and is told
+            * the drive is fine, and guard (2) skips the drive anyway --
+            * the cheap authoritative answer obtained and then ignored.
+            *
+            * Found on a live machine: S: had been recorded during a
+            * VPN-down session, and every later session reported
+            * "No datalib library at: S:/datalib" for a share that was
+            * mounted, healthy, and named datalib. Persisting the finding
+            * is what makes the guard worth having; never revisiting it is
+            * what turns a slow drive into a permanently invisible one.
+            *
+            * Only "connected" clears it. "unknown" must not: that is the
+            * answer for a shell we could not run or a status word we did
+            * not recognise, and it is no evidence at all.
+            if ("${dtlb_volstate_`vol'}"=="connected" & "${dtlb_dead_`vol'}"=="1") {
+                global dtlb_dead_`vol' ""
+
+                * Drop it from the file too, or the next session reloads it.
+                * Rewrite rather than truncate: other volumes on that list
+                * may still be dead and their memo is still worth having.
+                if (`"${dtlb_deadmemo_file}"'!="") {
+                    capture confirm file `"${dtlb_deadmemo_file}"'
+                    if (_rc==0) {
+                        tempname kh
+                        local keep ""
+                        file open `kh' using `"${dtlb_deadmemo_file}"', read text
+                        file read `kh' kline
+                        while (r(eof)==0) {
+                            local kv = strtrim(upper(`"`macval(kline)'"'))
+                            if (`"`kv'"'!="" & "`kv'"!="`vol'") local keep `"`keep' `kv'"'
+                            file read `kh' kline
+                        }
+                        file close `kh'
+
+                        capture file open `kh' using `"${dtlb_deadmemo_file}"', write text replace
+                        if (_rc==0) {
+                            foreach kv of local keep {
+                                file write `kh' "`kv'" _n
+                            }
+                            file close `kh'
+                        }
+                    }
+                }
+
+                noi di as text `"{p}note: drive {bf:`vol':} is connected again; the offline record for it has been cleared.{p_end}"'
+            }
+        }
+        * A drive that is DISCONNECTED or RECONNECTING is dropped now, not
+        * waited on. Reconnecting is the case that motivated this: the share is
+        * coming back, so a probe may eventually succeed -- after the operating
+        * system's timeout, which is the cost this whole guard exists to avoid.
+        * Waiting on a maybe is worse than failing on a certainty, because the
+        * caller can retry cheaply and cannot un-wait six minutes.
+        *
+        * "Until there is a second attempt": the volume is marked dead below,
+        * so it stays dropped for the session. datalib_config, retryvolumes
+        * clears that when the operator knows the drive is back.
+        local _vstate "${dtlb_volstate_`vol'}"
+        if (`isletter' & inlist("`_vstate'", "disconnected", "reconnecting")) {
+            noi di as text `"{p}note: drive {bf:`vol':} is mapped but {bf:`_vstate'}, so {bf:`p'} was not read. The operating system reported this without contacting the share; probing it would have cost minutes.{p_end}"'
             global dtlb_dead_`vol' = 1
             return scalar exists = 0
             return scalar islib  = 0
+            return scalar skipped_unreachable = 1
+            return local  volstate "`_vstate'"
+
+            * Kept because it was the name before "reconnecting" existed, and a
+            * caller may still read it. It is no longer accurate on its own --
+            * r(volstate) says which state it actually was -- so new code should
+            * read r(skipped_unreachable). (Copilot, PR #62.)
             return scalar skipped_disconnected = 1
             exit
         }
@@ -177,7 +257,20 @@ program define _dl_islib, rclass
         if ("`ok'"!="1") {
             * A volume that failed once will fail for every remaining
             * candidate, and each of those failures costs another OS timeout.
-            if ("`vol'"!="" & "`vol'"!="C") {
+            *
+            * But ONLY if the volume is what failed. -direxists- returns 0 for
+            * two entirely different facts -- "this drive did not answer" and
+            * "this drive answered, and there is no such directory" -- and
+            * condemning the volume for the second is how a healthy drive gets
+            * a permanent record. That is how S: came to be memoised on the
+            * author's machine: one lookup of a path that was not there, and
+            * every later session skipped a mounted, healthy share.
+            *
+            * So: if the OS says the drive is CONNECTED, a missing directory is
+            * an ordinary missing directory. Nothing timed out, there is
+            * nothing to remember, and the caller gets exists=0 as it should.
+            local vconn = ("${dtlb_volstate_`vol'}"=="connected")
+            if ("`vol'"!="" & "`vol'"!="C" & !`vconn') {
                 global dtlb_dead_`vol' = 1
 
                 * Record it, so the next session does not pay this again. The

@@ -1,12 +1,21 @@
 *******************************************************************************
 * _dtlb_ipums_extract
-*! v1.1.0  28Apr2026                by Joao Pedro Azevedo (UNICEF)
+*! v1.9.0  09Aug2026                by Joao Pedro Azevedo (UNICEF)
 *!                                  and Minh Cong Nguyen (World Bank)
 * Submit and download an IPUMS-International extract via the IPUMS API.
 *
 * Status: SKELETON / DESIGN STUB. The submit-poll-download workflow is sketched
 * but not exercised against the live API. Treat this file as a contract for the
 * future implementation, not as production code.
+*
+* NOT SHIPPED. This file is deliberately absent from datalib.pkg as of 1.9.0.
+* A skeleton with no help file has no business on a user's ado-path: -which-
+* finds it, tab-completion offers it, and the only thing it can do is fail
+* somewhere inside a workflow nobody has run. The manifest entry returns, with
+* a .sthlp beside it, in the release that implements the workflow.
+*
+* Note for that release: -net install, replace- does not remove files dropped
+* from a manifest, so 1.8.x installs keep a stale copy of this file.
 *
 * IPUMS API reference: https://developer.ipums.org/
 *
@@ -105,11 +114,20 @@ program define _dtlb_ipums_extract, rclass
         local out "${datalib}/`country'/`country'_`year'_CENSUS/`country'_`year'_CENSUS_v01_M_v01_A_IPUMS"
     }
 
+    * The canonical vintage tree, copied from _dtlb_mkdir.ado, which is the only
+    * command allowed to define it. This block used to be the single place
+    * in src/ that spelled the inner folders in lower case -- agreeing with the
+    * manuscript's specification against every other file, and against the
+    * loader that reads them (_dtlb_load.ado reads Data/Stata literally). A
+    * skeleton is a contract for its implementation, so a contract written in the
+    * wrong case is worse than no contract at all.
     capture mkdir "`out'"
-    capture mkdir "`out'/data"
-    capture mkdir "`out'/data/original"
-    capture mkdir "`out'/data/stata"
-    capture mkdir "`out'/doc"
+    capture mkdir "`out'/Data"
+    capture mkdir "`out'/Data/Original"
+    capture mkdir "`out'/Data/Stata"
+    capture mkdir "`out'/Data/Other"
+    capture mkdir "`out'/Doc"
+    capture mkdir "`out'/Programs"
 
     display as text "TODO: download not implemented in skeleton"
     display as text "  target: `out'"

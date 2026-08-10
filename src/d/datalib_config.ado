@@ -2,11 +2,21 @@
 * datalib_config: read the operator's datalib configuration
 * Author: Joao Pedro Azevedo
 * Co-author: Minh Cong Nguyen (World Bank)
-*! v1.7.1  2026-08-05
+*! v1.9.0  2026-08-09
 *******************************************************
-* Thin alias for -getuserconfig-, under the datalib_* name used by the R and
-* Python legs (datalib_config() there). Every option is passed through
-* unchanged, and every r() result is the one getuserconfig returned.
+* Mostly an alias for -getuserconfig-, under the datalib_* name used by the R
+* and Python legs (datalib_config() there). Every option EXCEPT list and
+* retryvolumes is passed through unchanged, and in that case every r() result
+* is the one getuserconfig returned.
+*
+* list and retryvolumes are handled here and exit before the getuserconfig
+* call, so neither reaches it and neither leaves anything in r() -- not even
+* _dtlb_config_list's own r(n_sources)/r(winner), because the list branch
+* exits without -return add-. They report and repair state that belongs to
+* this package rather than to the configuration file.
+*
+* The help file has said this since both options landed; this header did not,
+* and the manuscript inherited the header's version of it.
 *
 * The command it wraps is deliberately NOT datalib-specific: one config file is
 * meant to serve sibling tools, and only the `datalib:` key belongs to this
@@ -69,6 +79,23 @@ program define datalib_config, rclass
             capture erase `"`memof'"'
         }
         global dtlb_deadmemo_loaded ""
+
+        * The OS-state cache has to go too, or this command does nothing for
+        * the case it exists to serve. _dl_islib asks __dtlb_volstate only when
+        * ${dtlb_volstate_<V>} is EMPTY, and skips a drive whenever that cache
+        * reads "disconnected" -- so clearing only the dead-memo left a
+        * reconnected drive still cached as disconnected and still skipped.
+        * The faster guard, added later, quietly defeated the escape hatch.
+        * Cleared for every letter because nothing records which were asked.
+        * dtlb_dead_<V> too, and for the same reason: the disconnected guard
+        * sets it in-session WITHOUT writing the memo file (correctly -- the OS
+        * answer is live, so persisting "disconnected" would outlive the fact).
+        * Clearing only what the file listed therefore left the session flag
+        * standing, and guard (2) went on skipping the drive.
+        foreach L in A B C D E F G H I J K L M N O P Q R S T U V W X Y Z {
+            global dtlb_volstate_`L' ""
+            global dtlb_dead_`L'     ""
+        }
 
         if (`"`cleared'"'=="") {
             display as text "No volumes were recorded unreachable; nothing to forget."

@@ -1,6 +1,6 @@
 *! run_tests.do
 *! datalib QA runner
-*! Date: 06Aug2026
+*! Date: 09Aug2026
 *===============================================================================
 * qa/run_tests.do  --  the one entry point to the Stata gate
 *-------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ local target = trim(upper(`"`0'"'))
 local S_name  `" "SMOKE" "CHECKERS" "CONFIG" "CATALOG" "INSTALL" "DET" "INT" "DOC" "'
 local S_file  `" "run_smoke" "test_checkers" "test_config_seam" "test_catalog" "verify_install" "test_det" "test_integration" "test_help_examples" "'
 local S_fam   `" "NA-1..NA-8" "C1..C8" "R/D/P/W/L" "CAT-1..CAT-6" "V1..V25" "DET-01..07" "INT-01..04" "DOC-01..03" "'
-local S_asks  `" "does a fresh install behave" "do the checkers classify vintages" "does the config seam resolve" "does the catalog scan and filter" "does the packaged install work" "pinned inputs, pinned answers" "does the vendored yaml still satisfy us" "does the documentation match the code" "'
+local S_asks  `" "do the internals behave in place" "do the checkers classify vintages" "does the config seam resolve" "does the catalog scan and filter" "does the packaged install work" "pinned inputs, pinned answers" "does the vendored yaml still satisfy us" "does the documentation match the code" "'
 
 *-- INSTALL is driven by PowerShell, not by -do- --------------------------------
 * qa/verify_install.ps1 launches its own Stata to net-install into a scratch

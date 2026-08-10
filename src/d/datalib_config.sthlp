@@ -1,6 +1,6 @@
 {smcl}
 {hline}
-{help datalib}{right:Version 1.7.1}
+{help datalib}{right:Version 1.7.2}
 {cmd:help datalib_config}{right:Author: Joao Pedro Azevedo}
 {right:Date: 2026-08-05}
 {hline}

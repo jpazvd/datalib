@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datalib"
-version = "1.7.1"
+version = "1.9.0"
 description = "Access the IHSN-organized survey microdata archive (get / put / check)."
 readme = "README.md"
 requires-python = ">=3.9"
