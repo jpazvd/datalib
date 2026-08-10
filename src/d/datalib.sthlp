@@ -1,6 +1,6 @@
 {smcl}
 {hline}
-{cmd:help datalib}{right:Version 1.6.0}
+{cmd:help datalib}{right:Version 1.9.0}
 {right:Author: Joao Pedro Azevedo}
 {right:Date: 2026-08-06}
 {hline}
@@ -130,6 +130,14 @@ silent fall back to a published one.{p_end}
 {synopt:{opt programs}}Opens program files associated with the selected survey.{p_end}
 {synopt:{opt nomerge}}Prevents automatic merging of modules if multiple modules are selected.{p_end}
 {synopt:{opt clear}}Clears the current dataset before loading new data.{p_end}
+{synopt:{opt nowarning}}Suppresses the join report that a multi-module load prints by
+default -- the {it:joining modules} table naming each module, its row count and its
+distinct key count. The report is on by default because a join nobody sees is a join
+nobody can check.{p_end}
+{synopt:}Note that it also suppresses the per-module {cmd:r(rows_}{it:module}{cmd:)} and
+{cmd:r(distinct_}{it:module}{cmd:)} scalars, which are returned from inside the same block;
+{cmd:r(rows_}{it:base}{cmd:)} for the base module is returned either way. Notes about
+unmatched rows are NOT suppressed -- those report a result, not a progress message.{p_end}
 {synoptline}
 
 {title:Subroutines}

@@ -1,6 +1,6 @@
 *******************************************************************************
 * __dtlb_volstate
-*! v1.7.1  09Aug2026               by Joao Pedro Azevedo (UNICEF)
+*! v1.8.2  09Aug2026               by Joao Pedro Azevedo (UNICEF)
 *!                                  and Minh Cong Nguyen (World Bank)
 * Ask the OPERATING SYSTEM whether a mapped drive is connected, without
 * touching the share.
@@ -79,6 +79,20 @@ program define __dtlb_volstate, rclass
             if (inlist("`lf'", "ok", "conectado", "verbunden", "connecté")) local state "connected"
             if (inlist("`lf'", "disconnected", "unavailable", "desconectado")) local state "disconnected"
             if (inlist("`lf'", "getrennt", "déconnecté", "indisponible")) local state "disconnected"
+
+            * RECONNECTING is a THIRD state, and it was missing. Found on a
+            * live machine: Windows reported "Reconnecting Z:" while the share
+            * was coming back, this command had never heard of it, answered
+            * "unknown", and the fail-safe path therefore treated a drive that
+            * still blocks on touch as usable.
+            *
+            * It is reported separately rather than folded into "disconnected"
+            * because the two are different facts and the caller says which one
+            * it saw. What the CALLER does with it is settled in _dl_islib: do
+            * not wait for a reconnect, drop the root, and reconsider only on a
+            * later explicit attempt.
+            if (inlist("`lf'", "reconnecting", "reconectando", "wiederverbinden")) local state "reconnecting"
+            if (inlist("`lf'", "reconnexion", "riconnessione")) local state "reconnecting"
             * The UNC is the token beginning with a double backslash.
             local nw : word count `"`l'"'
             forvalues k = 1/`nw' {

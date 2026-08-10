@@ -2,7 +2,7 @@
 ** ibge: import PNAD and PNADC files into datalib
 * Author: Joao Pedro Azevedo
 * Co-author: Minh Cong Nguyen (World Bank)
-*! Version: 3.0.1       Date: <2024-08-22>
+*! Version: 3.0.2       Date: <2026-08-09>
 ** Description:
 * This program is designed to facilitate the process to import
 * PNAD and PNADC files into the datalib repository.
@@ -27,12 +27,10 @@ program define ibge, rclass
                 idbas                     ///
                 nid                       ///
                 idrs                      ///
-                path(string)              ///
-                subfoldr(string)          ///
-                filename(string)          ///
                 norename                  ///
                 clean                     ///
                 overwrite                 ///
+                path(string)            ///
                 MODule(string)          ///
                 MASter			        ///
                 ADAPtation              ///
@@ -46,6 +44,69 @@ program define ibge, rclass
                 skipdatazoom            ///
                 NOIsily                  ///
             ]
+    *******************************************************
+    * validate what we were asked for, BEFORE anything else
+    *******************************************************
+    * Placed above the datazoom guard on purpose. That guard exits when
+    * datazoom is absent, so validation below it would be unreachable on every
+    * machine that does not already have datazoom installed -- including every
+    * machine on which these messages would otherwise be demonstrated. This
+    * block reads locals only, so it costs nothing here.
+    *
+    * country() used to be declared and discarded: the two -_dtlb_mkdir- calls
+    * below hardcoded BRA, so -ibge, country(XAA)- deposited into BRA without
+    * comment. IBGE is Brazil's statistics institute and the DataZoom commands
+    * are Brazilian, so BRA is the right destination -- but it must be stated,
+    * not assumed silently.
+    if ("`country'" == "") local country BRA
+    local country = upper(strtrim("`country'"))
+    if ("`country'" != "BRA") {
+        noi di as err `"{p}ibge: {bf:country(`country')} is not available. This module wraps DataZoom's readers for Brazilian household surveys, so BRA is its only destination. Deposit another country's data with {bf:datalib_makelib} or {bf:_dtlb_put}.{p_end}"'
+        exit 198
+    }
+
+    * survey() reached the dispatcher unchecked, so an unrecognised acronym fell
+    * through every branch and returned silently having done nothing. Uppercase
+    * here is safe: _dtlb_mkdir uppercases survey itself, the dispatcher tests
+    * below wrap their argument in upper(), and the filename stub is built with
+    * lower().
+    local survey = upper(strtrim("`survey'"))
+    if !inlist("`survey'", "PNAD", "PNADC", "PNADCANUAL") {
+        noi di as err `"{p}ibge: {bf:survey(`survey')} is not recognised. Choose {bf:PNAD} or {bf:PNADC}.{p_end}"'
+        exit 198
+    }
+    * PNADCANUAL reaches a branch that, until this release, could never execute:
+    * it compared upper(survey) against the mixed-case literal "PNADCanual", so
+    * no input matched. The literal is fixed below, but the branch has still
+    * never run -- it calls datazoom_pnadcontinua_anual, nothing in qa/
+    * exercises ibge, and no licence here can run it. Refusing it is honest;
+    * shipping an untested path as though it worked is not.
+    if ("`survey'" == "PNADCANUAL") {
+        noi di as err `"{p}ibge: {bf:survey(PNADCANUAL)} is not yet supported. The annual-PNADC path exists but has never been executed, so it is gated rather than offered. See {bf:help ibge}.{p_end}"'
+        exit 198
+    }
+
+    * THE PASS-THROUGH TO _dtlb_mkdir, which was declared and never completed.
+    * path(), module(), master and adaptation are _dtlb_mkdir's own options, and
+    * this command already forwards six of their siblings -- vm(), va(),
+    * collection(), harmonization(), mkdir and overwrite. The four were declared
+    * beside them and then dropped on the floor, so -ibge, master- deposited an
+    * adaptation-less master request into a call that never heard of it.
+    *
+    * They are wired here rather than deleted precisely because the target
+    * exists: deleting would have removed somebody's stated intent, and would
+    * have forced the article to retract a claim it can now simply keep.
+    if (`"`path'"' == "") local path `"${datalib}"'
+
+    * panel deposits a PANEL adaptation of its own, so a second adaptation
+    * would be passed twice (a Stata syntax error) and master would contradict
+    * it outright. Refuse the combination rather than silently winning one of
+    * them -- silently winning is the defect being repaired.
+    if ("`panel'" != "" & ("`master'" != "" | "`adaptation'" != "")) {
+        noi di as err `"{p}ibge: {bf:panel} already deposits a PANEL adaptation, so it cannot be combined with {bf:master} or {bf:adaptation}. Drop the flag, or run without {bf:panel}.{p_end}"'
+        exit 198
+    }
+
     *******************************************************
     * check if datazoom is installed
     *******************************************************
@@ -85,8 +146,9 @@ program define ibge, rclass
     * use makdir to find the path to save files
     *******************************************************
         if ("`saving'" == "") {
-            _dtlb_mkdir, path(${datalib}) country(BRA) year(`year') survey(`survey') ///
+            _dtlb_mkdir, path(`path') country(`country') year(`year') survey(`survey') ///
                     vm(`vm') va(`va') collection(`collection') `mkdir' ///
+                    module(`module') `master' `adaptation' ///
                     harmonization(`harmonization') `overwrite'
             if ("`vm'"!="") & ("`va'"=="") {
                 local saving    "`r(data_M_stata)'"
@@ -248,8 +310,11 @@ program define ibge, rclass
                         }
                         noi di "`flnyear'"
                         * move files from origin to datalib
-                        _dtlb_mkdir, path(${datalib}) country(BRA) year(`flnyear') survey(PNADC) ///
+                        * adaptation is the branch's own, not the caller's --
+                        * the combination is refused above, so it cannot double.
+                        _dtlb_mkdir, path(`path') country(`country') year(`flnyear') survey(PNADC) ///
                             vm(`vm') va(`va') collection(PANEL) adaptation `mkdir' ///
+                            module(`module') ///
                             `overwrite'
                         if ("`vm'"!="") & ("`va'"=="") {
                             local tosaving    "`r(data_M_stata)'"
@@ -280,7 +345,7 @@ program define ibge, rclass
                 __dtlb_rmdir "`saving'/`wrkfolder'"
             }
         }
-        if (upper("`survey'") == "PNADCanual") {
+        if (upper("`survey'") == "PNADCANUAL") {
             datazoom_pnadcontinua_anual, years(`year') ///
                 original(`original') ///
                 saving(`saving') ///

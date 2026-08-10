@@ -2,7 +2,7 @@
 * _foldernav: Folder Navigation Utility
 * Author: Joao Pedro Azevedo
 * Co-author: Minh Cong Nguyen (World Bank)
-*! Version: 1.1       Date: 2026-08-04
+*! Version: 1.8.5       Date: 2026-08-09
 * Description:
 * This program is designed to navigate through folder structures
 * in the datalib repository, enabling the selection of subfolders
@@ -39,6 +39,40 @@ program define _foldernav, rclass
     * missing result yields "." , which used to build "${datalib}/./Data/..."
     * and fail with a confusing r(601).
     local prevfoldr `"`r(subfoldr)'"'
+
+    * WHY r() ALONE IS NOT ENOUGH (2026-08-09)
+    * r() is the most volatile store Stata has, and the chain above is exactly
+    * one command deep. Sibling clicks work only because each relays the
+    * incoming r(subfoldr) forward with -return add-; the moment anything else
+    * rclass runs in between, the folder is gone.
+    *
+    * A file load is exactly that. Observed, with -set trace on-:
+    *
+    *     datalib, subfoldr(XBB_2019_XHS_v01_M)   -> DATA / DOC / PROGRAMS
+    *     datalib, subfoldr(DATA)                 -> lists the two .dta
+    *     datalib, country(XBB) ... clear data    -> loads one
+    *     datalib, subfoldr(DOC)                  -> "no longer known"
+    *
+    * The trace shows -local prevfoldr `""'- on that last call: _dtlb_load's
+    * own -return add- had replaced r() with its load results, which carry no
+    * subfoldr. So the links die at the point they are most useful -- someone
+    * has just opened the data and now wants the README beside it.
+    *
+    * The remedy is the one this codebase already uses for the ROOT. The SMCL
+    * links carry no library() (see datalib.ado), so the resolved root is
+    * published to ${datalib} rather than scoped to one call; the folder needs
+    * publishing for the same reason and by the same argument.
+    *
+    * Kept as a FALLBACK, not a replacement: r(subfoldr) still wins when it is
+    * there, so an immediate sibling click behaves exactly as before and the
+    * memo can never override a fresher answer.
+    *
+    * The root is remembered with it. A folder is only meaningful inside the
+    * library it was listed from, so a memo taken in another library is
+    * discarded rather than used to build a path that does not exist.
+    if (`"`prevfoldr'"'=="" & `"${dtlb_navroot}"'==`"${datalib}"') {
+        local prevfoldr `"${dtlb_navfoldr}"'
+    }
 
     * Determine subfolder depth and structure
     local stubcnt = wordcount(subinstr("`subfoldr'", "_", " ",.))
@@ -196,12 +230,33 @@ program define _foldernav, rclass
         noi di in smcl _newline
         noi di in g in smcl "{hline}"
         foreach folders in `list' {
+            * -: dir- lowercases directory names on Windows, so the raw listing
+            * would read zza_2022_xhs_v01_m. Uppercasing compensates -- but
+            * blanket-uppercasing OVERSHOOTS: the canonical form is upper
+            * throughout EXCEPT the "v" of vNN, so this printed
+            * ZZA_2022_XHS_V01_M for a directory named ZZA_2022_XHS_v01_M.
+            *
+            * That is not cosmetic. The name is offered for copying, and the
+            * clickable link below carries the same spelling, so both fail on
+            * any case-sensitive filesystem. Windows hid it.
+            *
+            * subinstr per digit rather than a regexr loop: it replaces EVERY
+            * occurrence, which an adaptation needs (..._v01_M_v01_A_HCL has
+            * two), and it cannot loop forever.
             local folders = upper("`folders'")
+            forvalues d = 0/9 {
+                local folders = subinstr("`folders'", "_V`d'", "_v`d'", .)
+            }
             noi di in g in smcl `" {stata `"datalib, subfoldr(`folders')"': {bf: `folders'}} "'
         }
         noi di in g in smcl "{hline}"
 
-        * Return the selected subfolder
+        * Return the selected subfolder -- and publish it, so a DATA / DOC /
+        * PROGRAMS click still finds it after an intervening rclass command.
+        * See the note beside -prevfoldr- for why r() alone is not enough.
+        global dtlb_navfoldr `"`subfoldr'"'
+        global dtlb_navroot  `"${datalib}"'
+
         return add
         return local subfoldr`stubcnt' = "`subfoldr'"
         return local subfoldr = "`subfoldr'"
@@ -211,6 +266,35 @@ end
 
 /*******************************************************
 Version History
+
+v1.8.4 (2026-08-09)
+Section links stopped dying after a file load. DATA / DOC / PROGRAMS resumed
+from r(subfoldr) alone -- a chain exactly one command deep, since each call
+relays the incoming value forward with -return add- and any other rclass
+command in between wipes it. A file load is exactly that, so the links broke
+where they matter most: the data is open and the README is wanted next.
+
+The folder is now published in ${dtlb_navfoldr}, with the root it was listed
+from in ${dtlb_navroot}, and read as a FALLBACK -- r(subfoldr) still wins when
+present, so a sibling click behaves exactly as before. Remembering the root is
+what stops a folder from one library being used to build a path in another.
+
+Same argument the package already makes for the ROOT: the SMCL links carry no
+library(), so what they need has to be published rather than scoped to one
+call.
+
+v1.8.1 (2026-08-09)
+Stopped printing folder names that do not exist on disk. The listing
+uppercased each name to compensate for Stata's -: dir- lowercasing on
+Windows, which overshoots the canonical form: upper throughout EXCEPT the
+"v" of vNN. It printed ZZA_2022_XHS_V01_M for a directory named
+ZZA_2022_XHS_v01_M, and the clickable link carried the same spelling, so
+both failed on any case-sensitive filesystem.
+
+From here the stamp above tracks the PACKAGE version rather than this
+file's own count, which is why it jumps 1.1 -> 1.8.1. The bump guards
+compare each file's stamp against VERSION, so a private numbering can only
+diverge.
 
 v1.1 (2026-08-04)
 Extracted from _dtlb_load.ado into its own file and added to datalib.pkg, so

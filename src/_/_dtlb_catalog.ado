@@ -1,6 +1,6 @@
 *******************************************************************************
 * _dtlb_catalog
-*! v1.6.0  08Aug2026                by Joao Pedro Azevedo (UNICEF)
+*! v1.8.0  08Aug2026                by Joao Pedro Azevedo (UNICEF)
 *!                                  and Minh Cong Nguyen (World Bank)
 * Build and query a frame of all surveys/versions in a datalib tree — from
 * the local filesystem, or from a remote NADA catalog (api:// read story).
@@ -151,7 +151,18 @@ program define _dtlb_catalog_scan, rclass
         str3 country     int year      str10 survey                 ///
         str3 version     str10 kind    str10 adaptation             ///
         str3 aversion    str244 path   byte has_yaml                ///
-        str80 producer   str10 license str120 modules
+        str80 producer   str10 license str120 modules               ///
+        str32 library
+
+    // Which library a row came from. One scan fills one value, so today the
+    // library axis has a single column -- but an operator with several
+    // configured roots is exactly the case a country-by-library view exists
+    // for, and a column nobody adds until several exist is a column nobody
+    // adds in time. Derived from the root's own folder name.
+    local libname = subinstr(`"`path'"', "\", "/", .)
+    if (substr("`libname'", -1, 1)=="/") local libname = substr("`libname'", 1, length("`libname'")-1)
+    local libname = substr("`libname'", strrpos("`libname'", "/")+1, .)
+    if ("`libname'"=="") local libname "datalib"
 
     local n_versions    = 0
     local n_masters     = 0
@@ -247,6 +258,7 @@ program define _dtlb_catalog_scan, rclass
                     replace producer    = "`_producer'"   in `newrow'
                     replace license     = "`_license'"    in `newrow'
                     replace modules     = "`_modules'"    in `newrow'
+                    replace library     = "`libname'"    in `newrow'
                 }
 
                 local ++n_versions
@@ -511,7 +523,8 @@ program define _dtlb_catalog_list_api, rclass
         str3 version     str10 kind    str10 adaptation             ///
         str3 aversion    str244 path   byte has_yaml                ///
         str80 producer   str10 license str120 modules               ///
-        str120 idno      str244 title  str12 source
+        str120 idno      str244 title  str12 source                 ///
+        str32 library
 
     // ----- page loop --------------------------------------------------------
     local page          = 1
@@ -612,7 +625,8 @@ program define _dtlb_catalog_list_api, rclass
                     frame post dtlb_catalog ("`_c'") (`_y') ("`_s'")       ///
                         ("`_v'") ("`_k'") ("`_a'") ("`_av'")               ///
                         ("") (0) ("") ("") ("")                            ///
-                        (`"`_idno'"') (`"`_title'"') ("`src_label'")
+                        (`"`_idno'"') (`"`_title'"') ("`src_label'") ///
+                        ("`src_label'")
                     local ++rows_returned
                 }
                 file read `fh' line
