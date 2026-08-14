@@ -1,64 +1,83 @@
-# DATALIB
+# datalib
 
-**`datalib` treats survey microdata as a versioned asset** — the operational
-equivalent, for household surveys, of what version control did for code.
+Survey microdata as a versioned asset · command: `datalib` · Stata · Python · R
 
-Research teams treat code as a versioned asset: committed, reviewed,
-integrity-checked, citable. Data rarely gets the same discipline — microdata
-typically lives on a shared drive, in a folder named by whoever last copied it,
-with a citation buried in an e-mail thread. Yet a nationally representative
-survey costs millions of dollars to field, while a re-analysis costs orders of
-magnitude less: the highest-leverage intervention in empirical research is not
-collecting more surveys but **sustaining more analyses per survey**.
+**`datalib` treats survey microdata the way version control treats code** —
+committed, reviewed, integrity-checked, citable.
+
+Research teams treat code as a versioned asset. Data rarely gets the same
+discipline: microdata typically lives on a shared drive, in a folder named by
+whoever last copied it, with its citation buried in an e-mail thread. Yet a
+nationally representative survey costs millions of dollars to field while a
+re-analysis costs orders of magnitude less, so the highest-leverage intervention
+in empirical research is not collecting more surveys but **sustaining more
+analyses per survey**.
 
 `datalib` makes that possible by encoding the archive discipline as executable
-code rather than undocumented researcher conventions. It organizes microdata in
-the **IHSN / World Bank Microdata Library** folder standard — original **MASTER**
-files (`CCC_YYYY_SSSS_vNN_M`, immutable) kept strictly separate from
-**HARMONIZED** adaptations (`..._vNN_A_CLCT`) — and provides a unified interface
-to deposit, discover, load, and validate survey-versions across countries and
-vintages, with DDI/Dublin Core metadata generated at deposit time.
+code rather than undocumented convention. It organizes microdata in the
+[IHSN](https://www.ihsn.org/) / World Bank Microdata Library folder standard —
+original **master** vintages (`CCC_YYYY_SSSS_vNN_M`, immutable) kept strictly
+separate from **harmonized adaptations** (`..._vNN_M_vMM_A_HHHH`) — and gives
+one interface to deposit, discover, load and validate survey-versions across
+countries and vintages.
 
 `datalib` is **in production use at the World Bank and at UNICEF**, and is
 published for everyone else: national statistical offices, ministries, research
 institutes, and any agency standing up an archive of its own. Nothing in it is
-specific to either organisation — the folder standard is IHSN's, the code reads
+specific to either organization — the folder standard is IHSN's, the code reads
 its paths from configuration, and the two deployments differ only in what they
 put on disk. Treat it as a **worked example of how to build a microdata
 archive** as much as a package to install: the conventions are the point, and
-they are legible whether or not you run this code. It fits research labs,
-statistical agencies, microdata custodians and multi-investigator teams alike —
-anyone who believes data deserves the same versioned, auditable handling that
-code already gets.
+they are legible whether or not you run this code.
+
+## Contents
+
+- [Quick start](#quick-start)
+- [Point it at a library](#point-it-at-a-library)
+- [Data organization convention](#data-organization-convention)
+- [Verify your install](#verify-your-install)
+- [Documentation](#documentation)
+- [Which repository is canonical](#which-repository-is-canonical)
+- [Citation](#citation)
 
 ## Quick start
 
-`datalib` organizes survey microdata in the **IHSN / World Bank Microdata Library**
-folder taxonomy and gives you the same three verbs in **Stata, Python, and R** —
-with identical option names and values:
+The same three verbs in **Stata, Python and R**, with identical option names and
+values:
 
-| | get (load by coordinates) | put (deposit, IHSN-enforced) | check (validate archive) |
+| | get — load by coordinates | put — deposit, IHSN-enforced | check — validate an archive |
 |---|---|---|---|
-| **Stata** | `datalib, country(BRA) year(2019) survey(MICS) vm(v01) clear` | `_dtlb_put, country(BRA) year(2023) survey(SAEB)` | `_dtlb_check, path("$datalib")` |
+| **Stata** | `datalib, country(BRA) year(2019) survey(MICS) clear` | `_dtlb_put, country(BRA) year(2023) survey(SAEB)` | `_dtlb_check, path("$datalib")` |
 | **Python** | `datalib.get(country="BRA", year=2019, survey="MICS")` | `datalib.put(df, country="BRA", year=2023, survey="SAEB")` | `datalib.check()` |
 | **R** | `dl_get(country = "BRA", year = 2019, survey = "MICS")` | `dl_put(df, country = "BRA", year = 2023, survey = "SAEB")` | `dl_check()` |
 
-`put` is where the standard is enforced: it builds the IHSN folder skeleton, writes
-DDI-Codebook + Dublin Core + codebook metadata, keeps **MASTER** (original, immutable)
-and **HARMONIZED** (adaptations) in separate version folders, and validates the result.
+`put` is where the standard is enforced: it builds the folder skeleton, keeps
+master and harmonized vintages in separate folders, and validates the result.
 
-> **On the Stata `vm()` option.** The master vintage is required and must carry
-> its `v` prefix: `vm(v01)`, not `vm(01)`. Omitting `vm()` builds a path with an
-> empty version segment (`BRA_2015_PNAD__M`) and fails with `r(601)`; `latest`
-> does **not** supply a default. Note this differs from `_dtlb_idno`, which
-> normalises `1`, `01`, `v01` and `V01` to the same vintage. Pinned by checks
-> V24/V25 in the acceptance test below.
+**DDI-Codebook and Dublin Core are written at deposit time by the Python leg
+only** (`put(..., ddi=True)`, on by default). The Stata and R deposits build the
+tree and validate it, and write no metadata files. Closing that gap is tracked;
+until it does, do not read the table above as three equivalent implementations
+of the same deposit.
+
+**Vintages.** `vm()` names the master vintage and `va()` the adaptation vintage.
+All of `1`, `01`, `v01` and `V01` mean the same thing, as do `wrk`, `WRK`,
+`vwrk` and `vWRK` for the working vintage. **Omit `vm()` and the latest vintage
+loads and is announced**, so a log records which delivery produced the numbers.
 
 **Install**
 
 ```stata
 * Stata
 net install datalib, from(https://raw.githubusercontent.com/jpazvd/datalib/main/)
+```
+
+`datalib` reads a vintage's `datalib.yaml` without help, but richer YAML
+metadata in the catalog needs the `yaml` parser, which is an **optional
+dependency** — install it if you want it:
+
+```stata
+net install yaml, from(https://raw.githubusercontent.com/jpazvd/yaml/main/)
 ```
 ```bash
 # Python (from a clone)
@@ -69,28 +88,42 @@ pip install -e python/
 source("R/R/datalib.R")
 ```
 
-**Point it at a library.** Every command reads a library root, resolved in this
-order and without touching the disk:
+**No archive to hand?** Build a synthetic one — the package ships the recipe,
+not the data:
+
+```stata
+. datalib_makelib, families(demo) path(mydemo)
+. datalib_root, root(mydemo) set
+. datalib, country(XAA) year(2015) survey(XHS) clear
+```
+
+**Learn by running:** self-contained, temp-folder-safe examples in
+[`examples/`](examples/) — one per language.
+
+## Point it at a library
+
+Every command reads a library root, resolved in this order and **without
+touching the disk**:
 
 | # | Stage | Stata | R / Python |
 |---|---|---|---|
-| 1 | argument | `root()` | `root=` |
+| 1 | argument | `root()`, or `library()` on `datalib` | `root=` |
 | 2 | global | `${datalib}` | — |
 | 3 | environment | `DATALIB_ROOT` | `DATALIB_ROOT` |
 | 4 | generic config | `~/.config/user_config.yml` → `datalib:` | same |
 | 5 | package config | `~/.config/datalib_config.yml` → `datalib:` | same |
 
-The first non-empty candidate wins and is returned **as given** — a configured
-archive that is momentarily unreachable fails when a file is opened, rather than
-resolving somewhere else whose numbers will not reconcile.
+The first non-empty candidate wins and is returned **as given**. A configured
+archive that is momentarily unreachable therefore fails when a file is opened,
+rather than resolving somewhere else whose numbers will not reconcile.
 
 ```stata
 . datalib_root, root(F:/datalib) set     // pin it for the session
-. datalib_root                            // and ask where it came from
+. datalib_root                           // and ask where it came from
 ```
 
 **A configuration file is optional, not a prerequisite.** Run
-[`getuserconfig`](src/g/getuserconfig.ado) and, if you have no file, it prints
+[`getuserconfig`](stata/src/g/getuserconfig.ado) and, if you have no file, it prints
 the exact path and the two lines it needs with your username already filled in.
 Or have it write them:
 
@@ -100,240 +133,192 @@ Or have it write them:
 ```
 
 `create` is additive: it appends your block if the file already serves other
-operators, and it never rewrites a block that exists, so it cannot move a root
-your pipelines depend on. Only the Stata leg writes; R and Python read the same
-two files.
+operators, and never rewrites a block that exists, so it cannot move a root your
+pipelines depend on. Only the Stata leg writes; R and Python read the same two
+files.
 
-**No archive to hand?** Build a synthetic one — the package ships the recipe, not
-the data:
+## Data organization convention
 
-```stata
-. datalib_makelib, families(demo) path(mydemo)
-. datalib_root, root(mydemo) set
+Three words are used precisely throughout, and mean one thing each:
+
+| term | what it names | example |
+|---|---|---|
+| **folder** | the three named levels of the tree | country folder, survey folder, vintage folder |
+| **subfolder** | the fixed structure inside a vintage folder | `Data/Stata/`, `Doc/Reports/` |
+| **filename** | anything that is not a folder | `TJK_2009_TLSS_v01_M_hl.dta` |
+
+> The 2014 source note this convention comes from calls the *vintage* level a
+> "sub-folder". This repository deliberately reserves **subfolder** for the
+> `Data/`, `Doc/` and `Programs/` structure, and calls the version level a
+> **vintage folder**.
+
+```text
+datalib/                                          # library root
+└── CCC/                                          # country folder (ISO-3; also WLD, ECA)
+    └── CCC_YYYY_SSSS/                            # survey folder (YYYY = year collection STARTED)
+        ├── CCC_YYYY_SSSS_vNN_M/                  # master vintage folder (data as received)
+        │   ├── Data/
+        │   │   ├── Original/                     # raw, as received — NEVER modified
+        │   │   ├── Stata/                        # .dta — what the loader reads
+        │   │   ├── SPSS/                         # .sav
+        │   │   ├── R/                            # .rds / .RData
+        │   │   └── Other/                        # formats without a folder of their own
+        │   ├── Doc/
+        │   │   ├── Questionnaires/               # questionnaires (PDF, XLS, …)
+        │   │   ├── Reports/                      # survey reports, papers, briefs
+        │   │   └── Technical/                    # code lists, manuals, sampling, maps
+        │   └── Programs/                         # entry, editing, tabulation, analysis
+        │
+        └── CCC_YYYY_SSSS_vNN_M_vMM_A_HHHH/       # adaptation vintage folder (harmonized)
+            ├── Data/{Original,Stata,SPSS,R,Other}/
+            ├── Doc/{Questionnaires,Reports,Technical}/
+            └── Programs/
 ```
 
-**Learn by running:** self-contained, temp-folder-safe examples in
-[`examples/`](examples/) — one per language. The full specification is in
+Every subfolder is created **even when it has no content** — an empty
+`Doc/Technical/` asserts "we looked, there is none", which is information. The
+plan is defined once, in [`config/folderplan.yml`](config/folderplan.yml), and
+shared by all three languages; `_dtlb_folderplan` resolves it for the Stata leg.
+
+### Naming the folders
+
+**Survey folder** — `CCC_YYYY_SSSS`
+
+- **CCC** ISO-3166 alpha-3 country code (`ZWE`, `ALB`, `TJK`; or `WLD` / a regional code)
+- **YYYY** survey year, four digits — the year data collection *started*
+- **SSSS** survey acronym (`MICS`, `DHS`, `LSMS`, `PNAD`, …)
+
+**Master vintage folder** — `CCC_YYYY_SSSS_v01_M`
+
+- `v01_M` version 01, **M** for master: the full dataset, typically as provided
+  by the country
+- Later versions are `v02_M`, `v03_M`, … Earlier versions are **kept, never
+  replaced** — a published vintage is immutable.
+
+**Adaptation vintage folder** — `CCC_YYYY_SSSS_v01_M_v01_A_HLT`
+
+- **A** for adaptation, `HHHH` for the collection (`HLT`, `IPUMS`, `ECAPOV`,
+  `GLAD`, …)
+- The `vNN` *before* `_A` is the master it was built from; the one *after* is the
+  adaptation's own version. Adaptation vintages are numbered **within** a
+  master, so `v02_M_v01_A_HLT` is the first HLT built on master 2 and says
+  nothing about HLT under master 1.
+
+**Example** — `TJK_2009_TLSS_v01_M_v01_A_HLT` is the Tajikistan 2009 Living
+Standards Survey, master v01, HLT adaptation v01.
+
+The full specification is
 [`00_documentation/taxonomy.md`](00_documentation/taxonomy.md).
 
 ## Verify your install
 
-Four Stata suites and a cross-language release gate. **Invoke them from the repo
-root** — note the acceptance suite then relocates Stata to a scratch directory
-itself, which is deliberate and explained below.
-
-| Suite | Invoke | Question it answers | Needs |
-|---|---|---|---|
-| [`qa/run_smoke.do`](qa/run_smoke.do) | the do-file directly | Is the **code** correct? | Stata 16+ |
-| [`qa/verify_install.ps1`](qa/verify_install.ps1) | **the wrapper**, not the do-file | Does the **package a user receives** work? | Stata 16+, PowerShell |
-| [`qa/test_checkers.do`](qa/test_checkers.do) | the do-file, repo root as argument | Do the folder-name checkers and the vintage builder still behave? | Stata 15+ |
-| [`qa/test_config_seam.do`](qa/test_config_seam.do) | the do-file, repo root as argument | Does the library root resolve — and refuse — as specified? | Stata 15+ |
-| [`scripts/verify.ps1`](scripts/verify.ps1) | the release gate | Version manifest, Python, R, and whether the Stata record is current | PowerShell, Python, R |
-
-Use the wrapper for the acceptance suite. It creates the scratch working
-directory, clears any previous install root, and reads the verdict back out of
-the log. Running [`qa/verify_install.do`](qa/verify_install.do) by hand works
-too, but only if you start Stata from a scratch directory and pass the repo
-root as an argument — the do-file's header explains why.
+Eight Stata suites behind one runner, plus the cross-language legs. **Invoke
+from the repository root.**
 
 ```stata
-* Unit suite — 48 checks, runs the _dtlb_* internals in place
-"C:\Program Files\Stata17\StataMP-64.exe" -b do qa/run_smoke.do
+* Every suite; appends the result to qa/test_history.txt
+. do qa/run_tests.do
 ```
 
 ```powershell
-# Acceptance suite — installs the package, then uses it as a user would
+# Acceptance: installs the package, then uses it as a user would
 powershell -File qa/verify_install.ps1
 # or point it at a different Stata:
 powershell -File qa/verify_install.ps1 -Stata "C:\Program Files\Stata18\StataSE-64.exe"
 ```
 
-The two are **not** redundant. `run_smoke.do` adds `src/` to the adopath and
-tests the internals where they sit; it proves the code is right but cannot see
-packaging faults, because it never installs anything. `verify_install` performs
-a real `net install` from `datalib.pkg` into a throwaway directory, redirects
-`PLUS` and `PERSONAL` there so nothing resolves from your existing setup, and
-then runs **only from that install** — exercising `datalib` itself, which the
-unit suite never calls.
+Expected, as of v1.11.0:
 
-That distinction is not theoretical. The acceptance suite is what caught the
-`catalogs.yaml` gap below, and an earlier draft of it silently passed by
-resolving a *previously installed* copy of `datalib` from the real `PLUS`
-rather than the package under test.
-
-Expected results:
-
-| Suite | Expected |
-|---|---|
-| `qa/run_smoke.do` | 48 pass, 0 fail |
-| `qa/verify_install.ps1` | 41 pass, 0 fail |
-| `qa/test_checkers.do` | 11 pass |
-| `qa/test_config_seam.do` | 26 pass |
-| `pytest python/tests` | 87 passed, 52 skipped |
-| R `testthat` | 29 assertions |
+| Suite | Question it answers | Expected |
+|---|---|---|
+| `SMOKE` | Is the code correct? | 48 checks |
+| `CHECKERS` | Do the folder-name checkers and vintage builder behave? | 11 |
+| `CONFIG` | Does the library root resolve — and refuse — as specified? | 54 |
+| `CATALOG` | Does the catalog frame build and filter? | 7 |
+| `INSTALL` | Does the **package a user receives** work? | 41 |
+| `DET` | Deterministic behavior over a synthetic library | 68 |
+| `INT` | Does the vendored `yaml` coexist with a user's own? | 9 |
+| `DOC` | Do the documented examples still run? | 3 |
+| | **total** | **241, `GATE GREEN`** |
+| `pytest python/tests` | | 214 passed, 26 skipped |
 
 Anything else is a regression.
 
-The Python and R suites also run in CI ([`.github/workflows/tests.yml`](.github/workflows/tests.yml)) on Ubuntu and Windows. **The Stata suites cannot**: the runners have no licence, and batch Stata on Windows returns no usable exit code. They are a manual gate: run [`qa/run_tests.do`](qa/run_tests.do), which appends the result to [`qa/test_history.txt`](qa/test_history.txt). CI, the release workflow and `scripts/verify.ps1` all **fail** when the last recorded run is older than `VERSION`, is not `GATE GREEN`, or left a suite unfinished — rather than pretending they ran. See [`qa/TESTING_GUIDE.md`](qa/TESTING_GUIDE.md).
+`SMOKE` and `INSTALL` are **not** redundant, and the difference is the point.
+`run_smoke.do` adds `src/` to the adopath and tests the internals where they
+sit: it proves the code is right but cannot see packaging faults, because it
+never installs anything. `verify_install` performs a real `net install` from
+`datalib.pkg` into a throwaway directory, redirects `PLUS` and `PERSONAL` there
+so nothing resolves from your existing setup, and runs **only from that
+install**.
 
-### Packaging non-obvious: shipping non-`.ado` files
+That distinction is not theoretical. `INSTALL` is what caught a registry file
+that was listed in the manifest in a way that silently discarded it, and — more
+recently — a helper added to `src/` and never registered, which every other gate
+passed while the installed package was broken.
 
-If you add a data file to `datalib.pkg` — a registry, a schema, a lookup
-table — use a **capital `F`**, not a lowercase `f`:
+The Python and R suites also run in CI
+([`.github/workflows/tests.yml`](.github/workflows/tests.yml)) on Ubuntu and
+Windows. **The Stata suites cannot**: the runners have no license, and batch
+Stata on Windows returns no usable exit code. They are a manual gate whose
+result is written to [`qa/test_history.txt`](qa/test_history.txt), and CI fails
+when the last recorded run is older than `VERSION`, is not `GATE GREEN`, or left
+a suite unfinished — rather than pretending it ran. See
+[`qa/TESTING_GUIDE.md`](qa/TESTING_GUIDE.md).
 
-```text
-f src/_/_dtlb_catalog.ado        <- code: lowercase f
-F src/registry/catalogs.yaml     <- data: capital F
-```
+## Documentation
 
-Lowercase `f` installs only extensions Stata recognises (`.ado`, `.sthlp`,
-`.scheme`, `.style`). Everything else — `.yaml`, `.yml`, `.toml`, `.txt`,
-`.dta` — is **silently discarded, while `net install` still returns `rc=0`**.
-No error, no warning; the file simply never arrives. Capital `F` ships the
-file whatever its extension, and it still lands in the letter-subdirectory
-where `findfile` resolves it.
+| | |
+|---|---|
+| `help datalib` | the command surface, in Stata |
+| [`00_documentation/taxonomy.md`](00_documentation/taxonomy.md) | the folder and naming specification |
+| [`config/surface.yml`](config/surface.yml) | every option of every public command, in all three languages — machine-readable, and enforced by a test |
+| [`config/folderplan.yml`](config/folderplan.yml) | what a vintage folder contains |
+| [`examples/`](examples/) | runnable, one per language |
+| [`CHANGELOG.md`](CHANGELOG.md) | what changed and why |
 
-Both behaviours were verified with probe packages. This is the same approach
-`wbopendata.pkg` uses for its four `_wbopendata_*.yaml` files.
-
-The consequence of getting it wrong is quiet: `catalogs.yaml` was listed with
-lowercase `f` and never shipped, so `_dtlb_catalogregistry`'s bundled offline
-fallback had no file to find in an installed copy. `run_smoke.do` could not
-see it, because it runs from the repo where the relative-path fallback
-resolves. Check V2b of the acceptance suite now guards against a recurrence.
-
-## Scripts
-
-Shell scripts in `scripts/` automate common workflows. Run them from the repo root:
-
-| Script                 | Purpose                                                  |
-|------------------------|----------------------------------------------------------|
-| `scripts/pull-data.sh` | Fetch the `.dta.zip` archives from the private LFS mirror and unzip them locally |
-| `scripts/verify.ps1`   | Pre-release gate: version manifest, Python, R, and the Stata record |
-| `scripts/verify_r.R`   | Runs the R suite and prints one machine-readable line (used by the gate and by CI) |
-
-### Data setup (`pull-data.sh`)
-
-Neither the `.dta` files nor the `.dta.zip` archives they come from are stored in this repository. The archives live in a **private Git LFS mirror** (see [Where the payloads live](#where-the-payloads-live) below); this script fetches them from there and unzips them locally. After cloning, or whenever the data files are missing or outdated:
-
-```bash
-bash scripts/pull-data.sh
-```
-
-This fetches the archives from the LFS mirror described below and unzips them into `01_data/011_stata/`. **Neither the `.dta` files nor the `.dta.zip` archives are tracked in this repository** — it carries code, documentation and history, and no microdata at all. The script keeps a cache clone (default `~/.datalib/archive-mirror`) so repeated runs cost one fetch rather than a full re-download, and it refuses to copy a file that is still an LFS pointer, because a 130-byte pointer landing where a dataset should be looks like success and reads like corruption.
-
-### Where the payloads live
-
-The `.dta.zip` archives are mirrored to a **private Gitea repository, `jpazvd/datalib-dev` on the CORISCO host**, which holds them in Git LFS. Paths match this repository exactly (`01_data/011_stata/…`), so a file can be located from either side.
-
-The split is deliberate. These are survey microdata: large, and redistributable only under the producers' terms, so they do not belong in a repository that is mirrored publicly. GitHub stays canonical for code, documentation and history; the mirror keeps the payloads versioned and backed up rather than loose on a disk.
-
-Nothing enforces the correspondence — the two repositories are linked by convention only, which is why it is written down here and in the mirror's own README. To fetch the data you need read access to that Gitea instance and `git-lfs` installed; `git clone` alone yields pointer files, and `git lfs pull` fetches the blobs.
-
-## Provenance, and which way changes flow
+## Which repository is canonical
 
 There are two development repositories, and they are not copies of one another.
 
 | | Repository | Holds |
 |---|---|---|
-| **Generic** | `jpazvd/datalib-dev` **on GitHub** → public mirror `jpazvd/datalib` | the package: the folder grammar, the resolver, the checkers, the three language legs |
-| **Deployment** | `unicef-drp/datalib-unicef-dev` **on GitHub** | one organisation's configuration, drive topology and pipelines on top of it |
+| **Generic** | `jpazvd/datalib-dev` → public mirror [`jpazvd/datalib`](https://github.com/jpazvd/datalib) | the package: the folder grammar, the resolver, the checkers, the three language legs |
+| **Deployment** | `unicef-drp/datalib-unicef-dev` | one organization's configuration, drive topology and pipelines on top of it |
 
-Both are code repositories on GitHub. The `jpazvd/datalib-dev` **on the CORISCO
-Gitea host**, described under [Where the payloads live](#where-the-payloads-live),
-is a third thing that happens to share this repository's name: it holds only the
-data payloads in Git LFS and carries no code or history of its own.
+**Generic work belongs here and flows down.** Anything true of an archive
+regardless of who runs it — a folder rule, a resolution stage, a checker, a bug
+fix — lands here first. A deployment repository carries only what is specific to
+it: which drives exist, which surveys are acquired, which credentials apply.
 
-**Generic work belongs here and flows down.** Anything that is true of an
-archive regardless of who runs it — a folder rule, a resolution stage, a
-checker, a bug fix — lands in this repository first. A deployment repository
-carries only what is specific to it: which drives exist, which surveys are
-acquired, which credentials apply.
+Public names are kept **verbatim** across ports, so the two repositories'
+conformance cases stay diffable and a divergence shows up as a diff rather than
+as two suites that merely look similar. Every ported file names its origin in a
+provenance header.
 
-Honest history, because the direction was not always this one. The
-configuration seam that this package resolves roots with — and the golden cases
-that pin it — was **built in the UNICEF deployment repository first and
-backported here at v1.1.0**, from its v0.9.33.
+## Citation
 
-| Language | Reads the config | Resolves the root |
-|---|---|---|
-| Stata | `getuserconfig`, `datalib_config` (alias) | `datalib_root` |
-| R | `datalib_config()` | `datalib_root()` |
-| Python | `getuserconfig()`, `datalib_config()` | `datalib_root()`, `resolve_root()` |
+See [`CITATION.cff`](CITATION.cff). A draft design paper (Azevedo & Nguyen,
+working draft) gives the full rationale.
 
-`datalib_config` and `datalib_root` are the pair that exists in all three, which
-is what makes a script's intent portable between them. The extra names are each
-leg's own idiom, not gaps: `resolve_root()` is Python-only and returns the
-resolution as a value rather than reporting it.
+## License
 
-The port was generalized on the way: the `Z:/`
-default and the directory probe that went with it are deployment topology, not
-contract, and a start-up that touches a network share blocks `stata -b`
-outright when the share is slow or absent. Every ported file names its origin
-in a provenance header, so the lineage is readable at the file rather than
-inferred from this paragraph.
+**MIT** — see [`LICENSE`](LICENSE). Copyright is held by João Pedro Azevedo and
+Minh Cong Nguyen as individuals.
 
-Public names were kept **verbatim** across the port — the same command names,
-the same `source_stage` strings, the same case identifiers and path literals in
-the conformance suites. That is what makes the two repositories' golden cases
-diffable: a divergence shows up as a diff rather than as two suites that merely
-look similar. The two repositories share ancestry on GitHub, but they are
-reconciled by **content-level ports with provenance headers, never by merging
-the fork pair**.
+[`NOTICE`](NOTICE) states three things the license text itself does not:
 
-## Data workflow: datalib
-The storage of data and other materials in Datalib is organized by country. One folder has been created for each country. The folder name is the ISO 3-letter code for each country, as spelled in the WDI and available through the wbopendata command in Stata3. As some datasets are multi-country, the following folders were also created:
-* WLD: for datasets containing data from countries belonging to more than one region
-* HLT: for datasets containing data from countries belonging to more than one country from HLT
-If necessary, folders for other regions can be created here too. One folder will then be created for each survey. This folder name will be as follows:
+- **No institutional endorsement.** This is not a product of, nor endorsed by,
+  UNICEF or the World Bank Group. Affiliations shown anywhere in this repository
+  are for identification only. That the software is used at those institutions
+  is a fact about where it runs, not a claim of institutional backing.
+- **Provided as is**, without warranty or support of any kind, and with no
+  obligation to maintain, update or assist.
+- **The license covers the software, not the data.** Survey microdata a user
+  places into an archive built with this package belongs to the producers who
+  collected it and keeps whatever terms they attach. This repository ships no
+  real microdata — the only datasets in it are synthetic, generated from fixed
+  distributions with a pinned seed.
 
-CCC_YYYY_SSSS
-
-where
-* CCC = WDI country code (3 letters) (capitalized)
-* YYYY = survey year (4 digits); we use the year when data collection started
-* SSSS = survey acronym (e.g., MICS, DHS, LSMS, CWIQ, HBS, etc) (capitalized)
-
-For instance, the folder for the HBS 2005 from Albania will be ALB_2005_HBS. For multi-country datasets, CCC will be WLD (World) or ECA.
-One survey may have more than one version of the dataset. So under the survey folder, we will have as many sub-folders as we have versions. Even when we only have one version, we will create the sub-folder. The sub-folder name will identify the version.
-The subfolder name will be as follows:
-
-CCC_YYYY_SSSS_ vNN _M_vNN_A_HHHH
-
-Where
-* CCC = WDI country code (3 letters) (capitalized)
-* YYYY = survey year; we use the year when data collection started
-* SSSS = survey acronym (e.g., MICS, DHS, LSMS, CWIQ, HBS, etc) (capitalized)
-* vNN_M = the “M” comes from Master file. The Master file is the full dataset, typically as provided by the country. vNN is the version name; NN is a sequential number; it will always start with 01 and when a newer version is available it should be named v02, then v03 etc. The description of the version will be found in the DDI metadata. Note that when a new version comes, the previous one(s) must be kept too.
-* vNN_A_HHHH = “A” for Adaptations, and "CLCT" or “HHHH” for the name of the collection or adaptation. These are often subsets of the data, such as harmonized datasets; in our case, for now, the adaptions we have are ECAPOV, SILC and HOI. This part of the code will only appear when it’s not the original data, and it will be the name of the source folder where this data is being stored. The vNN follows the same rule as the numbering for original data, but this one refers for the version of the adaptation.
-For instance, the harmonized dataset produced by PREM for the ECAPOV project using the Tajikistan Living Standards Survey of 2009 would be named “TJK_2009_TLSS_v01_M_v01_A_ECAPOV” (See figure 1). This sub-folder name is where we will store the Nesstar file (the Nesstar filename will be the same as the name of the folder), as well as the DDI and the Dublin Core XML files. All other materials (data in Stata or other format, documents, programs) will be stored in sub-folders as described below.
-
-In the master version folder (in the case described, TJK_2009_TLSS_v01_M), we will create the following folders:
-
-* “Data” to store the data files.
-  * “Data\Original”: Under “Data” one sub-folder “Original” is created to store the dataset as received. This dataset will always be kept unchanged (i.e. in whatever format we receive it). If necessary, additional sub-folders can be created (for instance, if the original dataset is provided in multiple formats).
-  * “Data\Stata”: For every survey, we will store the data in Stata format. This Stata files will be the ones obtained by exporting the microdata from the Nesstar file. The variable/value labels will thus be strictly identical to what we find in the Nesstar file.
-  * “Data\Other”: Optionally, we can also save the data files in other formats (e.g., SPSS or ASCII). Again, this will have to correspond exactly to the data stored in the Nesstar file.
-
-* “Doc” to store the document files.
-  * “Doc\Questionnaires” to store all questionnaires (in PDF, XLS or other). Sub-folders can be created is needed.
-  * “Doc\Reports” to store the survey reports (and related, such as PPT presentations, papers, briefs, etc). Sub-folders can be created is needed.
-  * “Doc\Technical” to store all technical documents (code lists, interviewer’s manuals, sampling description, etc) and other materials such as photos, maps, etc. Sub-folders can be created is needed.
-
-* “Programs” to store all programs: data entry, editing, tabulation, analysis. Sub-folders can be created if needed.
-Note that all folders will be created, even if we do not have content for them (see Figure 2 for an example using Tajikistan 2009 TLSS).
-
-How to name and organize the do files
-For each country (CCC) and each year (YYYY), GMD generates up to four datasets starting from the original survey (see Annex I for further details) using the format:
-
-CCC_YYYY_SurveyName_vnn_M_vmm_A_GMD_i 
-
-where:
-* vnn 		(nn=01, 02, … ) stands for the version of the master file;
-* vmm 	(mm=01, 02, …) stands for the version of the harmonization, as there can be revisions after the first release;
-* i	denotes the specific GMD dataset, and in particular: 
-  * i=adult 	    Contains basic information collected for adults in the household;
-  * i=children 	    Contains basic information collected for children in the household;
-  * i=hhmembers 	Contains basic information collected for hhmembers in the household;
-  * i=household 	Contains basic information collected for household;
-
+`NOTICE` is separate rather than appended to `LICENSE` so the license stays
+byte-standard MIT and automated detection recognizes it.

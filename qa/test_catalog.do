@@ -24,10 +24,10 @@ log using "qa/logs/test_catalog.log", replace text
 
 *-- environment ----------------------------------------------------------------
 local repo "`c(pwd)'"
-adopath ++ "`repo'/src/_"
-adopath ++ "`repo'/src/d"
-adopath ++ "`repo'/src/i"
-adopath ++ "`repo'/src/y"
+adopath ++ "`repo'/stata/src/_"
+adopath ++ "`repo'/stata/src/d"
+adopath ++ "`repo'/stata/src/i"
+adopath ++ "`repo'/stata/src/y"
 
 *-- fixtures -------------------------------------------------------------------
 * The COMMITTED library, not the bash-built _tmp_datalib this suite used to

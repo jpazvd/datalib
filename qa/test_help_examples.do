@@ -43,11 +43,11 @@ capture mkdir "`repo'/qa/logs"
 capture log close _all
 log using "`repo'/qa/logs/test_help_examples.log", replace text
 
-adopath ++ "`repo'/src/_"
-adopath ++ "`repo'/src/d"
-adopath ++ "`repo'/src/g"
-adopath ++ "`repo'/src/i"
-adopath ++ "`repo'/src/y"
+adopath ++ "`repo'/stata/src/_"
+adopath ++ "`repo'/stata/src/d"
+adopath ++ "`repo'/stata/src/g"
+adopath ++ "`repo'/stata/src/i"
+adopath ++ "`repo'/stata/src/y"
 
 global dtlb_doc_n    = 0
 global dtlb_doc_fail = 0
@@ -66,13 +66,13 @@ end
 
 *-- the deprecated names, read from the stubs themselves ------------------------
 * Enumerated from disk, not hardcoded. A deprecation stub is a one-line forward
-* in src/_/ whose body says "use <replacement> instead", so the stubs ARE the
+* in stata/src/_/ whose body says "use <replacement> instead", so the stubs ARE the
 * list; typing it out here is how it goes stale the day someone adds or retires
 * one. (The first draft of this file carried a hardcoded list under a comment
 * claiming it was read from disk -- worse than either, because the comment told
 * the next reader not to check.)
 local deprecated ""
-local stubs : dir "`repo'/src/_" files "_*.ado"
+local stubs : dir "`repo'/stata/src/_" files "_*.ado"
 foreach s of local stubs {
     local nm = subinstr("`s'", ".ado", "", .)
     * the _dtlb_* and _dl_* families are current, not deprecated
@@ -82,7 +82,7 @@ foreach s of local stubs {
     * a stub is short and forwards; read the header for the deprecation notice
     tempname sh
     local isdep 0
-    file open `sh' using "`repo'/src/_/`s'", read text
+    file open `sh' using "`repo'/stata/src/_/`s'", read text
     file read `sh' sline
     local k = 0
     while (r(eof)==0) & (`k' < 20) {

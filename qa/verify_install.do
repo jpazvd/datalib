@@ -237,38 +237,34 @@ display as text "  datalib resolved to: `whereis'"
 vcheck, cond(strpos(lower(`"`whereis'"'), "datalib_verify_ado") > 0) ///
     msg("V4 datalib resolves from the scratch install, not the repo or the real PLUS")
 
-foreach c in _dtlb_catalog _dtlb_idno _dtlb_load yaml {
+foreach c in _dtlb_catalog _dtlb_idno _dtlb_load {
     capture which `c'
     vcheck, cond(_rc == 0) msg("V5 `c' ships and resolves")
 }
 
-* The vendored yaml must be the version we expect. Again: grab r(fn) before
-* any program call.
-capture findfile yaml_get.ado
-local yg `"`r(fn)'"'
-local yver ""
-if `"`yg'"' != "" {
-    tempname yh
-    capture file open `yh' using `"`yg'"', read text
-    if _rc == 0 {
-        file read `yh' yline
-        while r(eof) == 0 & "`yver'" == "" {
-            if substr(`"`macval(yline)'"', 1, 2) == "*!" local yver `"`macval(yline)'"'
-            file read `yh' yline
-        }
-        file close `yh'
-    }
-}
-display as text "  vendored yaml: `yver'"
-vcheck, cond(strpos(`"`yver'"', "2.0.0") > 0) ///
-    msg("V6 vendored yaml is v2.0.0 (scalar-leaf lookups; see src/y/VENDOR_NOTES.md)")
+* YAML IS AN OPTIONAL DEPENDENCY, NOT A BUNDLED ONE (2026-08-14).
+*
+* The vendored tree used to ship, and this block used to assert that it did:
+* that yaml resolved, that it was v2.0.0, and that its four internal helpers
+* came with it. All of that is now false BY DESIGN.
+*
+* -net install- accepts at most 100 files in a package -- measured by
+* bisection: 100 f entries parse, 101 give rc 640 "package file too long", and
+* the cap is on count, not length. The package had reached 106 and could not be
+* installed by anyone. The seventeen yaml files were the right ones to drop
+* because yaml was ALREADY optional at runtime: _dtlb_catalog probes with
+* -capture which yaml_read- and degrades with a note, and _dtlb_modspec
+* hand-parses datalib.yaml rather than calling the library.
+*
+* So the check inverts. It is no longer "yaml ships" but "yaml does NOT ship,
+* and the package works anyway" -- which is the claim a user depends on.
+capture which yaml_read
+vcheck, cond(_rc != 0) ///
+    msg("V5b yaml is NOT bundled (optional dependency; net install caps at 100 files)")
 
-* The four internal helpers must ship too. They live in src/_ upstream, so a
-* yaml*.ado glob misses them -- which is how they went unvendored from
-* 2026-04-28 to 2026-07-19 while yaml_read called all four.
 foreach h in _yaml_collapse _yaml_fastread _yaml_mataread _yaml_tokenize_line {
     capture which `h'
-    vcheck, cond(_rc == 0) msg("V6b helper `h' ships (yaml_read calls it)")
+    vcheck, cond(_rc != 0) msg("V6b `h' is not bundled either (it belongs to yaml)")
 }
 
 * _foldernav must resolve from the install on its own. Until it was extracted
@@ -318,14 +314,34 @@ frame dtlb_catalog {
     quietly count if country == "XAA"
     vcheck, cond(r(N) == 4) msg("V10 country stored uppercase (XAA has 4 rows)")
 
-    quietly count if has_yaml == 1 & producer != ""
-    vcheck, cond(r(N) == 5) msg("V11 YAML producer populated on all 5 masters carrying datalib.yaml")
+    * V11-V13 test what the YAML PARSER extracts, so they can only run when the
+    * optional dependency is installed. Skipping is the honest outcome of an
+    * absent optional dependency; asserting zero would be testing the
+    * degradation, which V13b does explicitly and by name.
+    capture which yaml_read
+    if (_rc == 0) {
+        quietly count if has_yaml == 1 & producer != ""
+        vcheck, cond(r(N) == 5) msg("V11 YAML producer populated on all 5 masters carrying datalib.yaml")
 
-    quietly count if has_yaml == 1 & license != ""
-    vcheck, cond(r(N) == 5) msg("V12 YAML license populated on all 5")
+        quietly count if has_yaml == 1 & license != ""
+        vcheck, cond(r(N) == 5) msg("V12 YAML license populated on all 5")
 
-    quietly count if modules != ""
-    vcheck, cond(r(N) == 5) msg("V13 YAML modules list populated on all 5")
+        quietly count if modules != ""
+        vcheck, cond(r(N) == 5) msg("V13 YAML modules list populated on all 5")
+    }
+    else {
+        display as text "  V11-V13 skipped: yaml not installed (optional dependency)"
+    }
+
+    * V13b -- what degradation actually means here, asserted rather than
+    * assumed. Detecting that a vintage CARRIES a datalib.yaml needs no parser,
+    * so has_yaml must still be right with yaml absent; only the fields read out
+    * of the file go empty. If this ever drops to zero, the scan has stopped
+    * seeing the files rather than merely stopped parsing them, and the note it
+    * prints would be telling the user the wrong story.
+    quietly count if has_yaml == 1
+    vcheck, cond(r(N) == 5) ///
+        msg("V13b vintages carrying datalib.yaml are still detected without the parser")
 }
 
 quietly _dtlb_catalog, list country(XAA)

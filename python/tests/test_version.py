@@ -22,7 +22,7 @@ SURFACES = [
     ("R/DESCRIPTION",             r"^Version:\s*(\S+)\s*$"),
     ("python/pyproject.toml",     r'^version\s*=\s*"([^"]+)"'),
     ("python/datalib/__init__.py", r'^__version__\s*=\s*"([^"]+)"'),
-    ("src/d/datalib.ado",         r"^\*!\s*v(\d+\.\d+\.\d+)"),
+    ("stata/src/d/datalib.ado",         r"^\*!\s*v(\d+\.\d+\.\d+)"),
     ("datalib.pkg",               r"^d\s+Version\s+(\S+)"),
     ("stata.toc",                 r"^d\s+Version\s+(\S+)"),
     # Not `^version:` alone -- that also matches `cff-version:`, which is the

@@ -73,9 +73,9 @@ capture log close _all
 capture mkdir "`repo'/qa/logs"
 log using "`repo'/qa/logs/test_config_seam.log", replace text
 
-adopath ++ "`repo'/src/_"
-adopath ++ "`repo'/src/d"
-adopath ++ "`repo'/src/g"
+adopath ++ "`repo'/stata/src/_"
+adopath ++ "`repo'/stata/src/d"
+adopath ++ "`repo'/stata/src/g"
 
 global dtlb_cfg_n = 0
 
@@ -468,7 +468,7 @@ display as text _dup(80) "="
 * Ported from unicef-drp/datalib-unicef-dev @ v0.9.33 (a66b6b6). These cases pin
 * the three behaviours that are easy to break and silent when broken.
 
-adopath ++ "`repo'/src/i"
+adopath ++ "`repo'/stata/src/i"
 
 local liblib "`base'_lib"
 capture mkdir "`liblib'"

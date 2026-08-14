@@ -51,8 +51,8 @@ capture log close _all
 capture mkdir "`repo'/qa/logs"
 log using "`repo'/qa/logs/test_checkers.log", replace text
 
-adopath ++ "`repo'/src/_"
-adopath ++ "`repo'/src/d"
+adopath ++ "`repo'/stata/src/_"
+adopath ++ "`repo'/stata/src/d"
 
 global dtlb_check_n = 0
 
@@ -154,7 +154,7 @@ display as text _dup(80) "="
 tempname fh
 local badpat = "_A_" + char(96) + "vastr'_A_"
 local nbad = 0
-file open `fh' using "`repo'/src/_/_dtlb_mkdir.ado", read text
+file open `fh' using "`repo'/stata/src/_/_dtlb_mkdir.ado", read text
 file read `fh' line
 while r(eof) == 0 {
     if strpos(`"`macval(line)'"', "`badpat'") > 0 local nbad = `nbad' + 1

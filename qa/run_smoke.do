@@ -26,10 +26,10 @@ log using "qa/logs/run_smoke.log", replace text
 
 *-- environment ----------------------------------------------------------------
 local repo "`c(pwd)'"
-adopath ++ "`repo'/src/_"
-adopath ++ "`repo'/src/d"
-adopath ++ "`repo'/src/i"
-adopath ++ "`repo'/src/y"
+adopath ++ "`repo'/stata/src/_"
+adopath ++ "`repo'/stata/src/d"
+adopath ++ "`repo'/stata/src/i"
+adopath ++ "`repo'/stata/src/y"
 
 capture confirm file "`repo'/qa/fixtures/api/info"
 if _rc {

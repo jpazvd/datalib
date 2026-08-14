@@ -1,6 +1,6 @@
 v 3
 d datalib -- survey microdata as a versioned asset
-d Version 1.9.0
+d Version 1.12.0
 d Joao Pedro Azevedo (UNICEF) and Minh Cong Nguyen (World Bank)
 d
 d Install with: net install datalib
