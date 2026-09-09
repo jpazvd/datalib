@@ -8,8 +8,8 @@ abstract: >-
   on. In production at the World Bank and at UNICEF, and published as a worked
   example for any institution standing up an archive of its own.
 type: software
-version: 1.9.0
-date-released: "2026-08-09"
+version: 1.12.0
+date-released: "2026-08-13"
 license: MIT
 repository-code: "https://github.com/jpazvd/datalib"
 keywords:
@@ -22,7 +22,7 @@ keywords:
   - Python
 authors:
   - family-names: Azevedo
-    given-names: Joao Pedro
+    given-names: João Pedro
     affiliation: UNICEF
     email: jpazevedo@unicef.org
   - family-names: Nguyen

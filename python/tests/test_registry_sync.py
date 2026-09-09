@@ -1,6 +1,6 @@
 """The two catalogs.yaml copies must not drift.
 
-`src/registry/catalogs.yaml` is the canonical registry that ships in the
+`stata/src/registry/catalogs.yaml` is the canonical registry that ships in the
 package; `docs/catalogs.yaml` is the copy served over GitHub Pages that
 `_dtlb_catalogregistry` fetches over the network. They are read by the same
 parser, so a difference between them means an operator gets a different answer
@@ -20,7 +20,7 @@ import pytest
 yaml = pytest.importorskip("yaml")
 
 ROOT = Path(__file__).resolve().parents[2]
-CANONICAL = ROOT / "src" / "registry" / "catalogs.yaml"
+CANONICAL = ROOT / "stata" / "src" / "registry" / "catalogs.yaml"
 SERVED = ROOT / "docs" / "catalogs.yaml"
 
 
@@ -58,7 +58,7 @@ def test_parsed_content_is_identical():
     a = yaml.safe_load(CANONICAL.read_text(encoding="utf-8"))
     b = yaml.safe_load(SERVED.read_text(encoding="utf-8"))
     assert a == b, (
-        "src/registry/catalogs.yaml and docs/catalogs.yaml parse differently. "
+        "stata/src/registry/catalogs.yaml and docs/catalogs.yaml parse differently. "
         "The served copy and the bundled fallback must describe the same "
         "catalogs, or the answer depends on whether the network was up."
     )

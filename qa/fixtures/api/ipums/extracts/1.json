@@ -1,0 +1,13 @@
+{
+  "number": 1,
+  "status": "completed",
+  "collection": "usa",
+  "description": "datalib fixture: a completed extract",
+  "dataFormat": "fixed_width",
+  "dataStructure": { "rectangular": { "on": "P" } },
+  "downloadLinks": {
+    "data": { "url": "https://api.ipums.org/downloads/usa/api/v1/extracts/1/usa_00001.dat.gz" },
+    "ddiCodebook": { "url": "https://api.ipums.org/downloads/usa/api/v1/extracts/1/usa_00001.xml" },
+    "stataCommandFile": { "url": "https://api.ipums.org/downloads/usa/api/v1/extracts/1/usa_00001.do" }
+  }
+}

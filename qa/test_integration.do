@@ -8,7 +8,7 @@
 * it. That makes yaml a hard runtime dependency wearing the costume of a
 * convenience.
 *
-* Three facts make this worth its own family, all from src/y/VENDOR_NOTES.md:
+* Three facts make this worth its own family, all from stata/src/y/VENDOR_NOTES.md:
 *
 *   1. The pin is to yaml v2.0.0 at commit e52d59f on branch `rr/sj-revision' --
 *      an UNMERGED branch. yaml's own main/develop are at v1.5.1, so the pinned
@@ -45,10 +45,10 @@ capture mkdir "`repo'/qa/logs"
 capture log close _all
 log using "`repo'/qa/logs/test_integration.log", replace text
 
-adopath ++ "`repo'/src/_"
-adopath ++ "`repo'/src/d"
-adopath ++ "`repo'/src/g"
-adopath ++ "`repo'/src/y"
+adopath ++ "`repo'/stata/src/_"
+adopath ++ "`repo'/stata/src/d"
+adopath ++ "`repo'/stata/src/g"
+adopath ++ "`repo'/stata/src/y"
 
 global dtlb_int_n = 0
 
@@ -81,7 +81,7 @@ chk, cond(_rc==0) msg("INT-01a the vendored yaml command resolves")
 local pinned "2.0.0"
 tempname yfh
 local yver ""
-file open `yfh' using "`repo'/src/y/yaml.ado", read text
+file open `yfh' using "`repo'/stata/src/y/yaml.ado", read text
 file read `yfh' line
 local i = 0
 while (r(eof)==0) & (`i' < 12) {
@@ -181,7 +181,7 @@ file close `vh0'
 local dlver = trim(`"`macval(dlver)'"')
 local dlver = subinstr("`dlver'", ".", "\.", .)
 
-local yados : dir "`repo'/src/y" files "*.ado"
+local yados : dir "`repo'/stata/src/y" files "*.ado"
 local n_y   = 0
 local n_bad = 0
 local bad   ""
@@ -189,7 +189,7 @@ foreach f of local yados {
     local n_y = `n_y' + 1
     tempname vh
     local hdr ""
-    file open `vh' using "`repo'/src/y/`f'", read text
+    file open `vh' using "`repo'/stata/src/y/`f'", read text
     file read `vh' line
     local j = 0
     while (r(eof)==0) & (`j' < 10) {

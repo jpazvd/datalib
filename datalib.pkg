@@ -1,6 +1,6 @@
 v 3
 d datalib. Survey microdata as a versioned asset (IHSN-organized archive)
-d Version 1.9.0
+d Version 1.12.0
 d
 d Commands to read (datalib), deposit (_dtlb_put) and validate (_dtlb_check)
 d survey microdata organized in the datalib / IHSN folder taxonomy, plus the
@@ -28,97 +28,107 @@ d NOTE ON DIRECTIVES: lowercase "f" installs only extensions Stata
 d recognises (.ado .sthlp .scheme .style); anything else -- .yaml
 d included -- is SILENTLY DROPPED while net install still returns 0.
 d Capital "F" ships the file regardless of extension. That is why
-d src/registry/catalogs.yaml below uses F. Same approach as
+d stata/src/registry/catalogs.yaml below uses F. Same approach as
 d wbopendata.pkg, which ships its four _wbopendata_*.yaml with F.
+d
+d LICENSE: MIT. Copyright (c) 2024-2026 Joao Pedro Azevedo and Minh Cong
+d Nguyen, as individuals. Provided AS IS, without warranty or support.
+d NOT a product of, nor endorsed by, UNICEF or the World Bank Group;
+d the affiliations below are for identification only. The licence covers
+d this software, NOT survey microdata placed into an archive built with
+d it -- that belongs to the producers who collected it. Full text and
+d notices: https://github.com/jpazvd/datalib (LICENSE, NOTICE).
 d
 d Authors: Joao Pedro Azevedo (UNICEF), Minh Cong Nguyen (World Bank)
 d Support: jpazevedo@unicef.org
 d
-f src/d/datalib.ado
-f src/d/datalib.sthlp
-f src/d/datalib_config.ado
-f src/d/datalib_config.sthlp
-f src/d/datalib_whence.ado
-f src/d/datalib_whence.sthlp
-f src/d/datalib_browse.ado
-f src/d/datalib_browse.sthlp
-f src/d/datalib_makelib.ado
-f src/d/datalib_makelib.sthlp
-f src/d/datalib_root.ado
-f src/d/datalib_root.sthlp
-f src/g/getuserconfig.ado
-f src/g/getuserconfig.sthlp
-f src/i/ibge.ado
-f src/i/ibge.sthlp
-f src/_/_dtlb_adaptcheck.ado
-f src/_/_dtlb_adaptcheck.sthlp
-f src/_/_dtlb_catalog.ado
-f src/_/_dtlb_catalog.sthlp
-f src/_/_dtlb_catalogregistry.ado
-f src/_/_dtlb_catalogregistry.sthlp
-f src/_/_dtlb_check.ado
-f src/_/_dtlb_check.sthlp
-f src/_/_dtlb_ctrycheck.ado
-f src/_/_dtlb_ctrycheck.sthlp
-f src/_/_dtlb_idno.ado
-f src/_/_dtlb_idno.sthlp
-f src/_/_dtlb_load.ado
-f src/_/_dtlb_load.sthlp
-f src/_/_dtlb_modspec.ado
-f src/_/_dtlb_modspec.sthlp
-f src/_/_dtlb_mergeplan.ado
-f src/_/_dtlb_mergeplan.sthlp
-f src/_/_dtlb_show.ado
-f src/_/_dtlb_show.sthlp
-f src/_/_dtlb_mkdir.ado
-f src/_/_dtlb_mkdir.sthlp
-f src/_/_dtlb_put.ado
-f src/_/_dtlb_put.sthlp
-f src/_/_dtlb_svycheck.ado
-f src/_/_dtlb_svycheck.sthlp
-f src/_/_dtlb_vcheck.ado
-f src/_/_dtlb_vcheck.sthlp
-f src/_/_dl_demo.ado
-f src/_/_dl_isdemo.ado
-f src/_/_dl_islib.ado
-f src/_/_dl_require_stage.ado
-f src/_/_foldernav.ado
-f src/_/_foldernav.sthlp
-f src/_/__dtlb_api_read.ado
-f src/_/__dtlb_api_read.sthlp
-f src/_/__dtlb_credential.ado
-f src/_/__dtlb_extensions_probe.ado
-f src/_/__dtlb_extensions_probe.sthlp
-f src/_/__dtlb_json.ado
-f src/_/__dtlb_mode.ado
-f src/_/__dtlb_move_and_clean.ado
-f src/_/__dtlb_rename.ado
-f src/_/__dtlb_rmdir.ado
-f src/_/__dtlb_userhome.ado
-f src/_/__dtlb_volstate.ado
-f src/_/__dtlb_userhome.sthlp
-F src/registry/catalogs.yaml
-f src/_/_adaptcheck.ado
-f src/_/_ctrycheck.ado
-f src/_/_dlw.ado
-f src/_/_mkdir.ado
-f src/_/_svycheck.ado
-f src/_/_vcheck.ado
-f src/y/_yaml_collapse.ado
-f src/y/_yaml_fastread.ado
-f src/y/_yaml_mataread.ado
-f src/y/_yaml_tokenize_line.ado
-f src/y/yaml.ado
-f src/y/yaml.sthlp
-f src/y/yaml_clear.ado
-f src/y/yaml_describe.ado
-f src/y/yaml_dir.ado
-f src/y/yaml_examples.sthlp
-f src/y/yaml_frames.ado
-f src/y/yaml_get.ado
-f src/y/yaml_list.ado
-f src/y/yaml_read.ado
-f src/y/yaml_validate.ado
-f src/y/yaml_whatsnew.sthlp
-f src/y/yaml_write.ado
+f stata/src/d/datalib.ado
+f stata/src/d/datalib_adaptations.ado
+f stata/src/d/datalib_browse.ado
+f stata/src/d/datalib_catalog.ado
+f stata/src/d/datalib_config.ado
+f stata/src/d/datalib_countries.ado
+f stata/src/d/datalib_create.ado
+f stata/src/d/datalib_explorer.ado
+f stata/src/d/datalib_files.ado
+f stata/src/d/datalib_index.ado
+f stata/src/d/datalib_load.ado
+f stata/src/d/datalib_makelib.ado
+f stata/src/d/datalib_resolve.ado
+f stata/src/d/datalib_root.ado
+f stata/src/d/datalib_surveys.ado
+f stata/src/d/datalib_vintages.ado
+f stata/src/d/datalib_whence.ado
+f stata/src/d/datalib.sthlp
+f stata/src/d/datalib_api.sthlp
+f stata/src/d/datalib_browse.sthlp
+f stata/src/d/datalib_config.sthlp
+f stata/src/d/datalib_create.sthlp
+f stata/src/d/datalib_explorer.sthlp
+f stata/src/d/datalib_index.sthlp
+f stata/src/d/datalib_makelib.sthlp
+f stata/src/d/datalib_root.sthlp
+f stata/src/d/datalib_whence.sthlp
+f stata/src/g/getuserconfig.ado
+f stata/src/g/getuserconfig.sthlp
+f stata/src/i/ibge.ado
+f stata/src/i/ibge.sthlp
+f stata/src/_/__dtlb_api_read.ado
+f stata/src/_/__dtlb_credential.ado
+f stata/src/_/__dtlb_extensions_probe.ado
+f stata/src/_/__dtlb_ipums_api_read.ado
+f stata/src/_/__dtlb_json.ado
+f stata/src/_/__dtlb_mode.ado
+f stata/src/_/__dtlb_move_and_clean.ado
+f stata/src/_/__dtlb_rename.ado
+f stata/src/_/__dtlb_rmdir.ado
+f stata/src/_/__dtlb_userhome.ado
+f stata/src/_/__dtlb_volstate.ado
+f stata/src/_/_adaptcheck.ado
+f stata/src/_/_ctrycheck.ado
+f stata/src/_/_dl_demo.ado
+f stata/src/_/_dl_fileaction.ado
+f stata/src/_/_dl_isdemo.ado
+f stata/src/_/_dl_islib.ado
+f stata/src/_/_dl_require_stage.ado
+f stata/src/_/_dlw.ado
+f stata/src/_/_dtlb_adaptcheck.ado
+f stata/src/_/_dtlb_catalog.ado
+f stata/src/_/_dtlb_catalogregistry.ado
+f stata/src/_/_dtlb_check.ado
+f stata/src/_/_dtlb_ctrycheck.ado
+f stata/src/_/_dtlb_folderplan.ado
+f stata/src/_/_dtlb_idno.ado
+f stata/src/_/_dtlb_load.ado
+f stata/src/_/_dtlb_mergeplan.ado
+f stata/src/_/_dtlb_mkdir.ado
+f stata/src/_/_dtlb_modspec.ado
+f stata/src/_/_dtlb_put.ado
+f stata/src/_/_dtlb_show.ado
+f stata/src/_/_dtlb_svycheck.ado
+f stata/src/_/_dtlb_vcheck.ado
+f stata/src/_/_foldernav.ado
+f stata/src/_/_mkdir.ado
+f stata/src/_/_svycheck.ado
+f stata/src/_/_vcheck.ado
+f stata/src/_/__dtlb_api_read.sthlp
+f stata/src/_/__dtlb_extensions_probe.sthlp
+f stata/src/_/__dtlb_userhome.sthlp
+f stata/src/_/_dtlb_adaptcheck.sthlp
+f stata/src/_/_dtlb_catalog.sthlp
+f stata/src/_/_dtlb_catalogregistry.sthlp
+f stata/src/_/_dtlb_check.sthlp
+f stata/src/_/_dtlb_ctrycheck.sthlp
+f stata/src/_/_dtlb_folderplan.sthlp
+f stata/src/_/_dtlb_idno.sthlp
+f stata/src/_/_dtlb_load.sthlp
+f stata/src/_/_dtlb_mergeplan.sthlp
+f stata/src/_/_dtlb_mkdir.sthlp
+f stata/src/_/_dtlb_modspec.sthlp
+f stata/src/_/_dtlb_put.sthlp
+f stata/src/_/_dtlb_show.sthlp
+f stata/src/_/_dtlb_svycheck.sthlp
+f stata/src/_/_dtlb_vcheck.sthlp
+f stata/src/_/_foldernav.sthlp
+F stata/src/registry/catalogs.yaml
 e

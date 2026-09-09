@@ -1,0 +1,99 @@
+# =============================================================================
+# catalogs.yaml — datalib multi-catalog registry (bundled offline fallback)
+# -----------------------------------------------------------------------------
+# Maps a catalog short name to the NADA REST deployment it identifies.
+# Read by _dtlb_catalogregistry, which resolves in this order:
+#   1. <home>/.datalib/catalogs.yaml          (user override)
+#   2. <home>/.datalib/cache/catalogs.yaml    (cached canonical, <= 24h old)
+#   3. https://jpazvd.github.io/datalib-dev/catalogs.yaml  (canonical; cached)
+#   4. this file                              (bundled offline fallback)
+#
+# The canonical copy lives at docs/catalogs.yaml in the repository and is
+# served via GitHub Pages, so an upstream URL change is a YAML edit on main,
+# not a package release. Keep this fallback byte-identical to the canonical
+# file at release time.
+#
+# Fields per catalog:
+#   name          display name
+#   base_url      NADA API base (no trailing slash)
+#   api_version   expected NADA API version (probe warns on mismatch)
+#   auth_type     x-api-key | bearer | none
+#   default       true on at most one entry (used when catalog() is omitted)
+#   metadata_only true when the catalog serves metadata but data downloads
+#                 redirect to producer sites (e.g., the IHSN central catalog)
+# =============================================================================
+
+wb:
+  name: World Bank Microdata Library
+  base_url: https://microdata.worldbank.org/index.php/api
+  api_version: v2
+  auth_type: x-api-key
+  default: true
+  metadata_only: false
+
+ihsn:
+  name: IHSN Central Catalog
+  base_url: https://catalog.ihsn.org/index.php/api
+  api_version: v2
+  auth_type: none
+  default: false
+  metadata_only: true
+
+# ---------------------------------------------------------------------------
+# Catalogs also served by the R package nadaverse, added 2026-08-13.
+#
+# Each was PROBED before being added -- GET <base_url>/catalog/search?ps=1 --
+# and each returned 200 with a NADA result envelope. A registry entry is a
+# promise that a short name resolves to something that answers; adding one on
+# the strength of another package's list would be repeating that package's
+# claim rather than making our own.
+#
+# metadata_only is set conservatively to true: these catalogs serve metadata
+# freely, and their data access generally runs through a request or licence
+# rather than a direct download. It is unverified per catalog, and it is inert
+# today because remote data loads do not ship. Verify each before they do.
+#
+# THREE OF NADAVERSE'S EIGHT ARE DELIBERATELY ABSENT:
+#
+#   ilo    RETIRED. https://webapps.ilo.org/surveyLib/index.php/api and the
+#          older www.ilo.org/surveyLib URL both redirect to
+#          rplumber.ilo.org/files/website/410_SC.html, which reads
+#          "410 Gone | ILO Survey Catalog Retired".
+#
+#   unhcr  Answers 200 with a browser User-Agent and 403 without one. The
+#          registry schema has no user_agent field and _dtlb_catalog sends
+#          none, so an entry would resolve to a 403. __dtlb_api_read already
+#          supports user_agent() on its curl transport; wiring it through the
+#          registry is the prerequisite, and is a schema change rather than a
+#          config edit.
+#
+#   df     Data First (University of Cape Town). Could not be reached from the
+#          machine this was verified on -- the API and the site homepage both
+#          fail to connect (curl exit 35, TLS). That is as likely to be a
+#          local network restriction as an outage, so it is left out rather
+#          than added unverified or declared dead.
+# ---------------------------------------------------------------------------
+
+erf:
+  name: Economic Research Forum
+  base_url: https://erfdataportal.com/index.php/api
+  api_version: v2
+  auth_type: none
+  default: false
+  metadata_only: true
+
+fao:
+  name: Food and Agriculture Organization
+  base_url: https://microdata.fao.org/index.php/api
+  api_version: v2
+  auth_type: none
+  default: false
+  metadata_only: true
+
+india:
+  name: Government of India
+  base_url: https://microdata.gov.in/NADA/index.php/api
+  api_version: v2
+  auth_type: none
+  default: false
+  metadata_only: true

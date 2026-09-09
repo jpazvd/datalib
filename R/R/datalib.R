@@ -5,7 +5,14 @@
 # Prototype: functions are sourceable now; a proper R package (DESCRIPTION,
 # NAMESPACE, roxygen man/) is the next step.
 
-DATALIB_SKELETON <- c("Data/Original", "Data/Stata", "Data/Other", "Doc", "Programs")
+# The vintage folder plan, plan "default". CANONICAL definition lives in
+# config/folderplan.yml and is shared with the Stata and Python legs;
+# python/tests/test_folderplan.py asserts this copy equals it. Do not edit
+# one leg without the YAML -- six copies of this list had already drifted.
+DATALIB_SKELETON <- c(
+  "Data", "Data/Original", "Data/Stata", "Data/SPSS", "Data/R", "Data/Other",
+  "Doc", "Doc/Questionnaires", "Doc/Reports", "Doc/Technical", "Programs"
+)
 
 #' Library root, in this package's original return shape
 #'

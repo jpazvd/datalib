@@ -63,9 +63,9 @@ capture mkdir "`repo'/qa/logs"
 capture log close _all
 log using "`repo'/qa/logs/test_det.log", replace text
 
-adopath ++ "`repo'/src/_"
-adopath ++ "`repo'/src/d"
-adopath ++ "`repo'/src/g"
+adopath ++ "`repo'/stata/src/_"
+adopath ++ "`repo'/stata/src/d"
+adopath ++ "`repo'/stata/src/g"
 
 global dtlb_det_n = 0
 
@@ -546,6 +546,128 @@ chk, cond(r(stamped)==1 & "`r(idno)'"=="XAA_2015_XHS_v01_M") ///
 quietly datalib, country(XAA) year(2015) survey(XHS) vm(01) clear data
 chk, cond(r(rows_roster)==400 & r(rows_household)==120 & r(distinct_household)==120) ///
     msg("DET-10k fan-out is reported: `=r(rows_roster)' persons over `=r(distinct_household)' households")
+
+*-------------------------------------------------------------------------------
+* DET-11 -- cross(): pairing two SIBLING modules on their shared parent
+*
+* DET-10g proves the default merge REFUSES two finest-levels. cross() is the
+* deliberate opt-in to that pairing, so it needs its own tests: before this
+* block the only coverage was incidental -- the DOC suite happens to run the
+* clickable example in datalib.sthlp, which exercises the happy path and none
+* of the five refusals.
+*
+* The fixture is XAA 2021 XSA: school > classroom > {teacher, student}, with
+* 40 schools, 120 classrooms, 240 teachers and 900 students.
+*-------------------------------------------------------------------------------
+display as text ""
+display as text "DET-11 -- cross(), the deliberate sibling pairing"
+
+quietly datalib, country(XAA) year(2021) survey(XSA) cross(teacher student) clear data
+local xn    = _N
+local xpl   "`r(mergeplan)'"
+local xrt   = r(rows_teacher)
+local xrs   = r(rows_student)
+local xrp   = r(rows_pairs)
+* The message deliberately does NOT read "240 x 900". cross() is not a
+* Cartesian product -- that would be 216,000 rows. It pairs only WITHIN a
+* shared parent: each of the 120 classrooms contributes its own teachers
+* times its own students, and those sub-products sum to 1,800. Writing it
+* as a multiplication of the two module totals invites exactly the reading
+* the option has to dispel.
+chk, cond(`xn'==1800 & `xrp'==1800 & `xrt'==240 & `xrs'==900) ///
+    msg("DET-11a pairs within the shared parent: `xrt' teachers and `xrs' students give `xn' pairs, not `xrt'*`xrs'")
+
+* The merge path reports an ancestor chain, "roster <- household" (DET-10d).
+* A pairing has no direction to report, so it gets its own notation. The
+* contrast is what distinguishes the two in r(mergeplan), not join-vs-no-join
+* -- cross() is a join, a joinby on the shared parent's key.
+chk, cond("`xpl'"=="teacher x student") ///
+    msg("DET-11b a pairing reports its own notation, not an ancestor chain (`xpl')")
+
+* The multiplication is the whole reason this option reports anything. 1800
+* over 240 is 7.5 and over 900 is 2 -- DIFFERENT factors, which is why both
+* directions are reported. A single number would leave one side unmeasured.
+chk, cond(reldif(`xrp'/`xrt', 7.5)<1e-8 & reldif(`xrp'/`xrs', 2)<1e-8) ///
+    msg("DET-11c fan-out differs per side: teacher x`=string(`xrp'/`xrt',"%4.2f")', student x`=string(`xrp'/`xrs',"%4.2f")'")
+
+* Both modules' columns arrive; neither module's identifier is dropped.
+capture confirm variable tchid
+local hast = (_rc==0)
+capture confirm variable stuid
+local hass = (_rc==0)
+chk, cond(`hast' & `hass') ///
+    msg("DET-11d the pair carries both modules' columns")
+
+* Argument order is not part of the request.
+quietly datalib, country(XAA) year(2021) survey(XSA) cross(student teacher) clear data
+chk, cond(_N==1800) ///
+    msg("DET-11e argument order does not change the result (N=`=_N')")
+
+*-- the refusals ---------------------------------------------------------------
+* Each names what is true of the ARGUMENTS, so the same message serves any
+* survey family. Tested by return code; the wording is the help file's job.
+
+capture datalib, country(XAA) year(2021) survey(XSA) cross(teacher) clear data
+chk, cond(_rc==198) msg("DET-11f one module is refused (rc `=_rc')")
+
+capture datalib, country(XAA) year(2021) survey(XSA) cross(school classroom student) clear data
+chk, cond(_rc==198) msg("DET-11g three modules are refused (rc `=_rc')")
+
+capture datalib, country(XAA) year(2021) survey(XSA) cross(teacher nosuchmodule) clear data
+chk, cond(_rc==198) msg("DET-11h an undeclared module is refused (rc `=_rc')")
+
+* Two identical words pass the arity check and would otherwise reach joinby,
+* multiplying every row by its own sibling count. Found by review, not by use.
+capture datalib, country(XAA) year(2021) survey(XSA) cross(student student) clear data
+chk, cond(_rc==198) msg("DET-11i the same module twice is refused (rc `=_rc')")
+
+* Ancestor-descendant is not a cross() case AND not a data error: the default
+* merge already joins these without duplicating a row.
+capture datalib, country(XAA) year(2021) survey(XSA) cross(classroom student) clear data
+chk, cond(_rc==198) msg("DET-11j an ancestor of the other is refused (rc `=_rc')")
+
+* Ancestry walks the whole parent chain, so a GRANDparent is caught too, and
+* in either order -- school > classroom > student, asked for backwards.
+capture datalib, country(XAA) year(2021) survey(XSA) cross(student school) clear data
+chk, cond(_rc==198) msg("DET-11k a grandparent is caught in either order (rc `=_rc')")
+
+
+* --- cross() must never be accepted and then dropped ---------------------------
+* Both of these returned rc 0 and a plain single-module load before v1.10.2:
+* cross() was read at one double-gated point, and outside those gates the
+* option evaporated. That is the defect this release fixed for nomerge, so
+* letting it stand for cross() would have been the same bug twice.
+capture datalib, country(XAA) year(2021) survey(XSA) ///
+    filename(XAA_2021_XSA_v01_M_student.dta) cross(teacher student) clear data
+chk, cond(_rc==198) ///
+    msg("DET-11l filename() with cross() is refused, not silently dropped (rc `=_rc')")
+
+* --- the refusal a caller actually reaches must name the way through ----------
+* Naming both modules is the natural way to ask for both, and that request is
+* refused by _dtlb_mergeplan, not by the block that knows about cross(). Until
+* v1.10.2 that message said the pairing was not available at all.
+capture datalib, country(XAA) year(2021) survey(XSA) module(teacher student) clear data
+local mrc = _rc
+chk, cond(`mrc'==459) msg("DET-11m two siblings named explicitly still refuse (rc `mrc')")
+
+* --- the cross path's stored results ------------------------------------------
+* r(mergespec_source) read r(spec_source), which only _dtlb_mergeplan sets and
+* this path never calls -- so it was always empty and nothing noticed.
+quietly datalib, country(XAA) year(2021) survey(XSA) cross(teacher student) clear data
+local xsrc "`r(mergespec_source)'"
+local xunit "`r(unit)'"
+local xnm  = r(n_modules)
+chk, cond("`xsrc'"=="yaml" & "`xunit'"=="pair" & `xnm'==2) ///
+    msg("DET-11n the cross path returns a real spec source (`xsrc'), unit=`xunit', n_modules=`xnm'")
+
+* --- provenance travels with a pairing too ------------------------------------
+* The cross path exited before the char block, so a crossed dataset carried no
+* identifier and datalib_whence could not place it.
+local cid : char _dta[datalib_idno]
+local ccx : char _dta[datalib_cross]
+chk, cond("`cid'"=="XAA_2021_XSA_v01_M" & "`ccx'"=="teacher student") ///
+    msg("DET-11o a pairing carries its own provenance (`cid', cross=`ccx')")
+
 
 display as result "DET: ALL CHECKS PASSED (${dtlb_det_n} checks)"
 display as text _dup(78) "="

@@ -19,8 +19,13 @@ ID_RE = re.compile(
     r"_v(?P<vm>\d+)_M(?:_v(?P<va>\d+)_A_(?P<clct>[A-Za-z0-9]+))?$"
 )
 
-# Required subfolders of every version folder
-SKELETON = ["Data/Original", "Data/Stata", "Data/Other", "Doc", "Programs"]
+# The vintage folder plan, plan "default". CANONICAL definition lives in
+# config/folderplan.yml and is shared with the Stata and R legs;
+# tests/test_folderplan.py asserts this copy equals it.
+SKELETON = [
+    "Data", "Data/Original", "Data/Stata", "Data/SPSS", "Data/R", "Data/Other",
+    "Doc", "Doc/Questionnaires", "Doc/Reports", "Doc/Technical", "Programs",
+]
 
 
 def survey_id(country, year, survey):

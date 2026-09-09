@@ -1,4 +1,3 @@
-
 ==============================================================================
 Test Run:   6 Aug 2026
 Started:   11:19:26
@@ -990,6 +989,626 @@ Checks:    226
   - CATALOG passed 7 checks
   - INSTALL external 41 checks
   - DET passed 53 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   13:02:04
+Ended:     13:02:41
+Duration:  0m 37s
+Branch:    fix/datalib-sthlp-line-breaks
+Version:   1.9.1
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    226
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 53 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   15:27:18
+Ended:     15:27:32
+Duration:  0m 14s
+Branch:    feat/cross-and-nomerge
+Version:   1.10.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 6 green, 1 red, 0 skipped, 1 separate
+Checks:    184
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL not-run 0 checks
+  - DET passed 53 checks
+  - INT passed 9 checks
+  - DOC failed 2 checks
+Result:    GATE RED
+Failed:    DOC
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   15:39:48
+Ended:     15:39:55
+Duration:  0m 7s
+Branch:    feat/cross-and-nomerge
+Version:   1.10.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 6 green, 1 red, 0 skipped, 1 separate
+Checks:    184
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL not-run 0 checks
+  - DET passed 53 checks
+  - INT passed 9 checks
+  - DOC failed 2 checks
+Result:    GATE RED
+Failed:    DOC
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   15:49:49
+Ended:     15:50:02
+Duration:  0m 13s
+Branch:    feat/cross-and-nomerge
+Version:   1.10.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 7 green, 0 red, 0 skipped, 1 separate
+Checks:    185
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL not-run 0 checks
+  - DET passed 53 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE INCOMPLETE
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   15:54:05
+Ended:     15:54:16
+Duration:  0m 11s
+Branch:    feat/cross-and-nomerge
+Version:   1.10.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    226
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 53 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   16:46:16
+Ended:     16:46:35
+Duration:  0m 19s
+Branch:    feat/cross-and-nomerge
+Version:   1.10.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    226
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 53 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   17:09:35
+Ended:     17:09:48
+Duration:  0m 13s
+Branch:    feat/cross-and-nomerge
+Version:   1.10.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    226
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 53 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   19:11:36
+Ended:     19:11:58
+Duration:  0m 22s
+Branch:    feat/cross-and-nomerge
+Version:   1.10.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    226
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 53 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   22:15:59
+Ended:     22:19:21
+Duration:  3m 22s
+Branch:    docs/syntax-completeness-and-cross-tests
+Version:   1.10.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    237
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 64 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   22:41:47
+Ended:     22:42:19
+Duration:  0m 32s
+Branch:    docs/syntax-completeness-and-cross-tests
+Version:   1.10.1
+Stata:     17 IC (Windows)
+Suites:    8 run, 7 green, 0 red, 0 skipped, 1 separate
+Checks:    196
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL not-run 0 checks
+  - DET passed 64 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE INCOMPLETE
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   22:52:43
+Ended:     22:53:17
+Duration:  0m 34s
+Branch:    docs/syntax-completeness-and-cross-tests
+Version:   1.10.1
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    237
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 64 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  11 Aug 2026
+Started:   23:45:56
+Ended:     23:46:32
+Duration:  0m 36s
+Branch:    docs/syntax-completeness-and-cross-tests
+Version:   1.10.1
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    237
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 64 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  12 Aug 2026
+Started:   01:08:33
+Ended:     01:08:41
+Duration:  0m 8s
+Branch:    fix/cross-silent-drop-and-refusal-parity
+Version:   1.10.2
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  12 Aug 2026
+Started:   07:06:12
+Ended:     07:06:25
+Duration:  0m 13s
+Branch:    fix/cross-silent-drop-and-refusal-parity
+Version:   1.10.2
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  12 Aug 2026
+Started:   20:35:10
+Ended:     20:35:27
+Duration:  0m 17s
+Branch:    feat/surface-declaration
+Version:   1.10.3
+Stata:     17 IC (Windows)
+Suites:    8 run, 7 green, 0 red, 0 skipped, 1 separate
+Checks:    200
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL not-run 0 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE INCOMPLETE
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  12 Aug 2026
+Started:   20:43:01
+Ended:     20:43:14
+Duration:  0m 13s
+Branch:    feat/surface-declaration
+Version:   1.10.3
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  12 Aug 2026
+Started:   23:20:36
+Ended:     23:20:40
+Duration:  0m 4s
+Branch:    feat/one-folder-plan
+Version:   1.10.3
+Stata:     17 IC (Windows)
+Suites:    8 run, 4 green, 4 red, 0 skipped, 0 separate
+Checks:    126
+  - SMOKE incomplete 44 checks
+  - CHECKERS passed 11 checks
+  - CONFIG incomplete 12 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET incomplete 0 checks
+  - INT passed 9 checks
+  - DOC incomplete 2 checks
+Result:    GATE RED
+Failed:    SMOKE(incomplete) CONFIG(incomplete) DET(incomplete) DOC(incomplete)
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  12 Aug 2026
+Started:   23:25:08
+Ended:     23:25:29
+Duration:  0m 21s
+Branch:    feat/one-folder-plan
+Version:   1.10.3
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  12 Aug 2026
+Started:   23:57:33
+Ended:     23:57:51
+Duration:  0m 18s
+Branch:    feat/one-folder-plan
+Version:   1.10.3
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  13 Aug 2026
+Started:   07:02:50
+Ended:     07:02:59
+Duration:  0m 9s
+Branch:    feat/one-folder-plan
+Version:   1.11.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  13 Aug 2026
+Started:   08:22:00
+Ended:     08:22:11
+Duration:  0m 11s
+Branch:    docs/readme-restructure
+Version:   1.11.1
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  13 Aug 2026
+Started:   09:48:57
+Ended:     09:49:12
+Duration:  0m 15s
+Branch:    paper/table1-catalog-clients
+Version:   1.11.1
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  13 Aug 2026
+Started:   11:29:48
+Ended:     11:30:02
+Duration:  0m 14s
+Branch:    feat/ipums-api-transport
+Version:   1.12.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  13 Aug 2026
+Started:   12:01:44
+Ended:     12:01:58
+Duration:  0m 14s
+Branch:    feat/ipums-api-transport
+Version:   1.12.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  13 Aug 2026
+Started:   15:55:19
+Ended:     15:55:32
+Duration:  0m 13s
+Branch:    refactor/stata-src-layout
+Version:   1.12.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  13 Aug 2026
+Started:   16:50:37
+Ended:     16:50:48
+Duration:  0m 11s
+Branch:    refactor/stata-src-layout
+Version:   1.12.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  13 Aug 2026
+Started:   19:43:50
+Ended:     19:44:06
+Duration:  0m 16s
+Branch:    feat/port-unicef-commands
+Version:   1.12.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
+  - INT passed 9 checks
+  - DOC passed 3 checks
+Result:    GATE GREEN
+Logs:      qa/logs/<suite>.log
+==============================================================================
+
+==============================================================================
+Test Run:  13 Aug 2026
+Started:   23:35:17
+Ended:     23:35:36
+Duration:  0m 19s
+Branch:    feat/port-unicef-commands
+Version:   1.12.0
+Stata:     17 IC (Windows)
+Suites:    8 run, 8 green, 0 red, 0 skipped, 0 separate
+Checks:    241
+  - SMOKE passed 48 checks
+  - CHECKERS passed 11 checks
+  - CONFIG passed 54 checks
+  - CATALOG passed 7 checks
+  - INSTALL external 41 checks
+  - DET passed 68 checks
   - INT passed 9 checks
   - DOC passed 3 checks
 Result:    GATE GREEN
